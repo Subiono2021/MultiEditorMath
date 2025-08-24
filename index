@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Multi Editor: Markdown/NoteBook • MathLive • SageMath (Eksekusi Nyata)</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="https://unpkg.com/mathlive"></script>
+
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+
+    <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+
+    <style>
+        :root{
+            --ink:#111; --bg:#f5f5f7; --panel:#fff; --brand:#2d7ef7; --muted:#eef2f7; --danger:#e74c3c; --ok:#2ecc71;
+            --border:#e6e8eb;
+        }
+        
+        body.dark-mode {
+            --ink: #f5f5f7;
+            --bg: #1e1e1e;
+            --panel: #2d2d2d;
+            --brand: #6a9de9;
+            --muted: #444;
+            --danger: #e74c3c;
+            --ok: #2ecc71;
+            --border: #555;
+        }
+        * {
+            box-sizing:border-box;
+        }
+        body {
+            font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; 
+            margin:0; 
+            background:var(--bg); 
+            color:var(--ink);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        header {
+            position:sticky;
+            top:0;
+            background:var(--panel);
+            border-bottom:1px solid var(--border); 
+            z-index:10;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        header .inner {
+            max-width:1100px;
+            margin:0 auto;
+            padding:16px;
+        }
+        h1 {
+            font-size:20px;
+            margin:0;
+        }
+
+        .toolbar {
+            position:sticky;
+            top:64px;
+            background:var(--panel);
+            border-bottom:1px solid var(--border);
+            z-index:9;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .toolbar .inner {
+            max-width:1100px;
+            margin:0 auto;
+            padding:10px;
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+        button {
+            border:none;
+            border-radius:10px;
+            padding:10px 14px;
+            font-weight:700;
+            cursor:pointer;
+            background:var(--brand);
+            color:#fff;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+        button.secondary {
+            background:#6c7a89;
+        }
+        button.danger {
+            background:var(--danger);
+        }
+        button.ghost {
+            background:#e0e7ff;
+            color:#1e40af;
+        }
+        button:disabled {
+            opacity:.6;
+            cursor:not-allowed;
+        }
+        .dark-mode button.ghost {
+            background: #444;
+            color: #b2d6ff;
+        }
+
+        #editors {
+            max-width:1100px;
+            margin:16px auto;
+            display:grid;
+            gap:16px;
+        }
+
+        .card {
+            background:var(--panel);
+            border:1px solid var(--border);
+            border-radius:16px;
+            box-shadow:0 6px 16px rgba(0,0,0,.05);
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+        .card .hd {
+            display:flex;
+            gap:10px;
+            align-items:center;
+            justify-content:space-between;
+            padding:10px 12px;
+            border-bottom:1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+        .left {
+            display:flex;
+            gap:10px;
+            align-items:center;
+        }
+        .badge {
+            padding:4px 8px;
+            border-radius:999px;
+            background:var(--muted);
+            font-size:12px;
+            font-weight:700;
+            transition: background-color 0.3s;
+        }
+        .title {
+            font-weight:800;
+        }
+
+        .card .bd {
+            padding:12px;
+        }
+        textarea.code {
+            width:100%;
+            height:180px;
+            resize:vertical;
+            border:1px solid var(--border);
+            border-radius:12px;
+            padding:10px;
+            font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size:14px;
+            background:#fff;
+            color: #111;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+        .dark-mode textarea.code {
+            background: #222;
+            color: #eee;
+            border-color: #555;
+        }
+
+        .actions {
+            display:flex;
+            gap:8px;
+            margin-top:10px;
+            flex-wrap:wrap;
+        }
+
+        .out {
+            margin-top:10px;
+            background:#0b1020;
+            color:#d7e1ff;
+            border-radius:12px;
+            padding:10px;
+            font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space:pre-wrap;
+            min-height:56px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .out.ok {
+            outline:2px solid rgba(46, 204, 113,.3);
+        }
+        .out.err {
+            outline:2px solid rgba(231, 76, 60,.35);
+        }
+        .out.html-output {
+            background: #fff;
+            color: #111;
+            padding: 20px;
+        }
+        .dark-mode .out.html-output {
+            background: #222;
+            color: #eee;
+        }
+
+        .markdown-preview {
+            display: none;
+        }
+        .markdown-preview.visible {
+            display: block;
+        }
+        .markdown-editor-container {
+            position: relative;
+        }
+        .markdown-preview pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            color: #333;
+        }
+        .dark-mode .markdown-preview pre {
+            background: #333;
+            color: #eee;
+        }
+
+        .note {
+            font-size:13px;
+            color:#444;
+            margin-top:8px;
+        }
+        .dark-mode .note {
+            color: #aaa;
+        }
+
+        /* Gaya Modal (Pop-up) Panduan */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--panel);
+            margin: auto;
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .dark-mode .modal-content {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-btn, .close-btn-ai {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover, .close-btn-ai:hover,
+        .close-btn:focus, .close-btn-ai:focus {
+            color: var(--ink);
+            text-decoration: none;
+        }
+
+        .modal-content h2, .modal-content h3 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            color: var(--ink);
+        }
+
+        .modal-content p, .modal-content ul {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .modal-content ul {
+            padding-left: 20px;
+        }
+
+        .modal-content li {
+            margin-bottom: 8px;
+        }
+        .mathlive-container {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            background: #fff;
+        }
+        .dark-mode .mathlive-container {
+            background: #222;
+            border-color: #555;
+        }
+        
+        .sagecell_output .sagecell_html {
+            background: var(--panel) !important;
+            color: var(--ink) !important;
+        }
+        .sagecell_output pre {
+            color: var(--ink) !important;
+        }
+        .sagecell_output {
+            background-color: var(--bg) !important;
+            border-color: var(--border) !important;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="inner">
+            <h1>
+                Multi Editor: <span class="badge">Markdown/NoteBook</span> • <span class="badge">MathLive</span> • <span class="badge">
+                SageMath (SageCell)</span> • <span class="badge">Sebagai Laboratorium Matematika berbasis Web</span>
+            </h1>
+            <div class="note">Markdown/NoteBook dieksekusi <b>lokal di browser</b> via marked.js. MathLive adalah editor 
+                matematika interaktif. SageMath dieksekusi <b>di cloud</b> via SageCell.</div>
+        </div>
+    </header>
+
+    <div class="toolbar">
+        <div class="inner">
+            <button id="addMarkdown">+ NoteBook</button>
+            <button id="addMathLive" class="ghost">+ MathLive</button>
+            <button id="addSage" class="ghost">+ SageMath</button>
+            <button id="saveAll" class="secondary">💾 Simpan Semua</button>
+            <input id="importInput" type="file" accept=".json" style="display:none" />
+            <button id="importBtn" class="secondary">📂 Import File</button>
+            <button id="clearAll" class="danger">🧹 Bersihkan Editor</button>
+            <button id="showGuide" class="ghost">📚 Panduan</button>
+            <button id="showAIAssist" class="ghost">🤖 Bantuan AI</button>
+            <button id="darkModeToggle" class="ghost">☀️/🌙 Mode Gelap</button>
+        </div>
+    </div>
+
+    <main id="editors"></main>
+
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>📚 <b>Panduan Multi Editor Versi 01</b></h2>
+            <p style="text-align: right; font-size: 18px;">
+              <b>
+                  قَالُوا سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنتَ الْعَلِيمُ الْحَكِيمُ
+              </b>
+            </p>
+            <p align="justify">
+              Selamat datang di <b>Multi Editor</b>! Alat ini dirancang sebagai ruang kerja yang fleksibel untuk 
+              berbagai kebutuhan komputasi, penelitian, dan dokumentasi. Selain itu Multi Editor ini juga
+              dirancang sebagai <b>Laboratorium Matematika berbasis Web dan Komputasi Awan</b>.
+            </p>
+
+            <h3>Komponen Editor</h3>
+            <ul align="justify">
+                <li>
+                  <strong>Markdown/NoteBook</strong>: Gunakan untuk membuat catatan, dokumentasi, atau laporan. 
+                  Fitur ini bekerja sepenuhnya di browser Anda.
+                </li>
+                <li>
+                  <strong>MathLive</strong>: Editor interaktif untuk menulis persamaan matematika kompleks dalam format <b>$\LaTeX$</b>. 
+                  Hasilnya langsung terlihat saat Anda mengetik dan sangat berguna untuk menampilkan simbol-simbol matematika.</li>
+                <li><strong>SageMath (SageCell)</strong>: Lingkungan komputasi aljabar yang kuat. Kode Anda dikirim dan 
+                  dieksekusi di server cloud SageCell, sangat berguna untuk perhitungan yang berat.
+                </li>
+            </ul>
+
+            <hr>
+            
+            <h3>Fungsionalitas Tambahan</h3>
+            <ul align="justify">
+              <li>
+                <strong>💾 Simpan Semua</strong>: Fungsi ini akan mengunduh semua konten dari setiap editor yang ada di halaman ke dalam satu file. File ini berformat JSON (`.json`) dan dapat digunakan untuk mengembalikan semua editor Anda di lain waktu.
+              </li>
+              <li>
+                <strong>📂 Import File</strong>: Tombol ini memungkinkan Anda mengunggah file `.json` yang sebelumnya Anda simpan. Setelah diimpor, semua editor yang ada dalam file tersebut akan dimuat kembali ke halaman.
+              </li>
+              <li>
+                <strong>🧹 Bersihkan Editor</strong>: Tombol ini akan menghapus semua editor yang saat ini ada di halaman. Gunakan tombol ini untuk memulai dari awal.
+              </li>
+              <li>
+                <strong>☀️/🌙 Mode Gelap</strong>: Tombol ini memungkinkan Anda beralih antara tema tampilan terang dan gelap. Pengaturan pilihan tema akan disimpan di browser Anda sehingga akan tetap sama saat Anda kembali mengunjungi halaman ini.
+              </li>
+            </ul>
+
+            <hr>
+
+            <h3>Relevansi di Era AI dan Komputasi Awan</h3>  
+            <p align="justify">
+              Alat Multi Editor ini dirancang untuk proses pembelajaran dan kerja di era modern yang sangat dipengaruhi oleh 
+              <b>Kecerdasan Buatan (AI)</b> dan <b>Komputasi Awan (<i>Cloud Computing</i>)</b>.</p>
+            <p><strong>Kenapa penting?</strong></p>
+            <p align="justify">
+              Di masa depan, pekerjaan akan semakin bergantung pada kemampuan untuk <b>berinteraksi dengan AI</b> dan 
+              <b>memanfaatkan sumber daya komputasi awan</b>. Multi Editor ini adalah simulasi sederhana dari ekosistem tersebut:
+            </p>
+            <ul align="justify">
+                <li>
+                  Anda bisa menggunakan editor Markdown untuk mencatat ide atau instruksi, seolah-olah Anda sedang berinteraksi 
+                  dengan model <b>AI generatif</b>.
+                </li>
+                <li>
+                  Anda dapat menggunakan SageMath untuk melakukan perhitungan yang kompleks. Ini mirip dengan cara para 
+                  ilmuwan dan insinyur menggunakan platform komputasi awan untuk menjalankan model AI yang membutuhkan 
+                  daya pemrosesan tinggi, tanpa harus memiliki superkomputer sendiri.
+                </li>
+            </ul>
+            <p align="justify">
+              Menguasai alat-alat seperti ini berarti Anda sedang melatih diri untuk berpikir secara 
+              <b>komputasional</b> dan memanfaatkan teknologi cloud, sebuah keahlian fundamental di dunia yang didorong oleh AI.
+            </p>    
+        </div>
+    </div>
+    
+    <div id="aiModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn-ai">&times;</span>
+            <h2>🤖 Bantuan AI (Google Gemini)</h2>
+            <p style="text-align: right; font-size: 18px;">
+              <b>
+                  يَرْفَعِ ٱللَّهُ ٱلَّذِينَ ءَامَنُوا۟ مِنكُمْ وَٱلَّذِينَ أُوتُوا۟ ٱلْعِلْمَ دَرَجَٰتٍ ۚ وَٱللَّهُ بِمَا تَعْمَلُونَ خَبِيرٌ
+              </b>
+            </p>
+            <p style="text-align: right; font-size: 18px;">
+              <b>
+                    قَالَ النَّبِيُّ ﷺ:
+مَنْ كَتَمَ عِلْمًا أُلْجِمَ يَوْمَ الْقِيَامَةِ بِلِجَامٍ مِنْ نَارٍ          
+                   — رواه ابن ماجه والترمذي             
+              </b>
+            </p>
+            <p align="justify">
+              Karena alasan keamanan dan teknis, alat ini tidak bisa langsung terintegrasi dengan Google Gemini.
+            </p>
+            <p align="justify">
+              Namun, Anda bisa <b>memanfaatkan Google Gemini atau ChatGpt sebagai asisten</b> dengan cara berikut:
+            </p>
+            <ul align="justify">
+                <li>
+                  Buka <a href="https://gemini.google.com" target="_blank"><b><mark>gemini.google.com</mark></b></a> atau
+                  <a href="https://chatgpt.com/" target="_blank"><b><mark>chatgpt.com</mark></b></a> di tab baru pada browser Anda.
+                </li>
+                <li>
+                  Gunakan Gemini untuk atau ChatGpt <b>membuat draf konten Markdown</b>, seperti artikel, daftar, atau catatan. 
+                  Cukup salin dan tempel/<i>copy paste</i> hasilnya ke editor Markdown di sini.
+                </li>
+                <li>
+                  Minta Gemini atau ChatGpt untuk <b>membuat atau memverifikasi kode SageMath</b>. Salin kode yang dihasilkan dan 
+                  jalankan di editor SageMath. Contoh prompt: <code>Buatkan saya kode SageMath untuk menghitung turunan dari 
+                  f(x) = x^2 * sin(x)</code>.
+                </li>
+                <li>
+                  Tanyakan kepada Gemini tentang <b>persamaan matematika atau formula $\LaTeX$</b> yang bisa Anda gunakan di editor 
+                  MathLive.
+                </li>
+            </ul>
+            <p align="justify">
+              Dengan cara ini, Anda dapat menggabungkan kemampuan <b>AI generatif</b> dari Gemini dengan alat komputasi 
+              yang ada di <b>Multi Editor</b>.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ===================== STATE & HELPERS =====================
+        const editorsEl = document.getElementById('editors');
+        const btnAddMarkdown = document.getElementById('addMarkdown');
+        const btnAddMathLive = document.getElementById('addMathLive');
+        const btnAddSage = document.getElementById('addSage');
+        const btnSaveAll = document.getElementById('saveAll');
+        const btnImport = document.getElementById('importBtn');
+        const importInput = document.getElementById('importInput');
+        const btnClearAll = document.getElementById('clearAll');
+        const btnShowGuide = document.getElementById('showGuide');
+        const guideModal = document.getElementById('guideModal');
+        const closeBtnGuide = document.querySelector('.close-btn');
+
+        const btnShowAIAssist = document.getElementById('showAIAssist');
+        const aiModal = document.getElementById('aiModal');
+        const closeBtnAI = document.querySelector('.close-btn-ai');
+        
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        let nextId = 1;
+
+        function makeId(){ return 'ed-'+(nextId++); }
+
+        function createCardBase(label, id){
+            const card = document.createElement('section');
+            card.className = 'card';
+            card.dataset.id = id;
+            card.dataset.type = label;
+            card.innerHTML = `
+                <div class="hd">
+                    <div class="left">
+                        <span class="badge">${label}</span>
+                        <span class="title">Editor #${id}</span>
+                    </div>
+                    <div class="right">
+                        <button class="secondary" data-action="copy">📋 Salin</button>
+                        <button class="danger" data-action="delete">Hapus</button>
+                    </div>
+                </div>
+                <div class="bd"></div>
+            `;
+            return card;
+        }
+
+        // Fungsi bantuan untuk menyalin teks
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Teks berhasil disalin!");
+            }).catch(err => {
+                console.error('Gagal menyalin teks: ', err);
+                alert("Gagal menyalin teks.");
+            });
+        }
+        
+        // Konfigurasi marked.js untuk tidak mengganggu sintaks LaTeX.
+        marked.use({
+            renderer: {
+                code(code, lang, escaped) {
+                    if (lang === 'latex' || lang === 'tex') {
+                        return '$$' + code + '$$';
+                    }
+                    return marked.Renderer.prototype.code.call(this, code, lang, escaped);
+                }
+            },
+            tokenizer: {
+                codespan(src) {
+                    const match = src.match(/^\`([^\`]*)\`/); // Inline code
+                    if (match) {
+                        return {
+                            type: 'codespan',
+                            raw: match[0],
+                            text: match[1].trim()
+                        };
+                    }
+                }
+            },
+            walkTokens(token) {
+                if (token.type === 'paragraph' || token.type === 'list_item') {
+                    // Cek untuk inline math
+                    token.text = token.text.replace(/\$(.*?)\$/g, (match, p1) => {
+                        return '<span class="latex-inline">' + p1.trim() + '</span>';
+                    });
+                }
+            }
+        });
+
+        function renderMarkdown(markdownText) {
+            const html = marked.parse(markdownText);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Konversi span kustom ke MathJax
+            const inlineSpans = tempDiv.querySelectorAll('span.latex-inline');
+            inlineSpans.forEach(span => {
+                span.innerHTML = `\\(${span.textContent}\\)`;
+            });
+
+            const codeBlocks = tempDiv.querySelectorAll('pre > code');
+            codeBlocks.forEach(code => {
+                const lang = code.getAttribute('class');
+                if (lang && (lang.includes('language-latex') || lang.includes('language-tex'))) {
+                    const content = code.textContent;
+                    const newDiv = document.createElement('div');
+                    newDiv.innerHTML = '$$' + content + '$$';
+                    code.parentNode.replaceWith(newDiv);
+                }
+            });
+
+            MathJax.typesetPromise([tempDiv]).then(() => {
+                const sageScripts = tempDiv.querySelectorAll('script[type="text/sage"]');
+                sageScripts.forEach(script => {
+                    sagecell.makeSagecell({
+                        inputLocation: script.parentNode,
+                        template: sagecell.templates.minimal,
+                        evalButtonText: 'Jalankan Sage',
+                        code: script.textContent
+                    });
+                });
+            });
+
+            return tempDiv.innerHTML;
+        }
+        
+        function addMarkdownEditor(code="# Judul\n\nIni adalah contoh editor **Markdown**.\n\n* Item 1\n* Item 2\n\nPersamaan linear: $y=mx+c$\n\nPersamaan kuadrat:\n```latex\nx = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}\n```"){
+            const id = makeId();
+            const card = createCardBase('Markdown', id);
+            const bd = card.querySelector('.bd');
+            bd.innerHTML = `
+                <div class="markdown-editor-container">
+                    <textarea class="code" spellcheck="false" placeholder="Tulis kode Markdown di sini..."></textarea>
+                    <div class="markdown-preview out html-output"></div>
+                </div>
+                <div class="actions">
+                    <button data-action="toggle-markdown">Lihat Preview</button>
+                    <button class="secondary" data-action="clear-out">Bersihkan Output</button>
+                </div>
+            `;
+            const textarea = bd.querySelector('textarea.code');
+            textarea.value = code || '';
+            editorsEl.appendChild(card);
+        }
+        
+        function addMathLiveEditor(code="x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}"){
+            const id = makeId();
+            const card = createCardBase('MathLive', id);
+            const bd = card.querySelector('.bd');
+            bd.innerHTML = `
+                <div class="note">Catatan: MathLive adalah editor interaktif, tidak ada tombol 'Jalankan'.</div>
+                <div class="mathlive-container">
+                    <math-field virtual-keyboard-mode="manual"></math-field>
+                </div>
+            `;
+            const mathField = bd.querySelector('math-field');
+            mathField.value = code || '';
+            card.dataset.code = code || '';
+            editorsEl.appendChild(card);
+        }
+
+        function addSageEditor(code="# Misal: hitung integral\nvar('x')\nintegrate(sin(x), x)"){
+            const id = makeId();
+            const card = createCardBase('SageMath', id);
+            const bd = card.querySelector('.bd');
+            bd.innerHTML = `
+                <textarea class="code" spellcheck="false" placeholder="Tulis kode SageMath (Sage) di sini..."></textarea>
+                <div class="actions">
+                    <button data-action="run-sage">▶ Jalankan Sage (cloud)</button>
+                    <button class="secondary" data-action="clear-out">Bersihkan Output</button>
+                </div>
+                <div class="note">Catatan: Kode dijalankan melalui <b>SageCell</b> (membutuhkan internet). Output akan muncul di bawah ini.</div>
+                <div id="sage-target-${id}" class="out"></div>
+            `;
+            bd.querySelector('textarea.code').value = code || '';
+            editorsEl.appendChild(card);
+        }
+
+        editorsEl.addEventListener('click', async (e)=>{
+            const btn = e.target.closest('button');
+            if(!btn) return;
+            const card = e.target.closest('.card');
+            if(!card) return;
+            const id = card.dataset.id;
+            const type = card.dataset.type;
+            const action = btn.dataset.action;
+            const outEl = card.querySelector('.out');
+
+            if(action === 'delete'){
+                if(confirm('Apakah Anda yakin ingin menghapus editor ini?')){
+                    card.remove();
+                }
+                return;
+            }
+
+            if (action === 'copy') {
+                let textToCopy = '';
+                if (type === 'Markdown' || type === 'SageMath') {
+                    const textarea = card.querySelector('textarea.code');
+                    if (textarea) textToCopy = textarea.value;
+                } else if (type === 'MathLive') {
+                    const mathField = card.querySelector('math-field');
+                    if (mathField) textToCopy = mathField.value;
+                }
+                copyToClipboard(textToCopy);
+                return;
+            }
+
+            if(action === 'clear-out'){
+                if(outEl){ 
+                    outEl.innerHTML = '';
+                    outEl.classList.remove('ok', 'err'); 
+                    if (type === 'SageMath') {
+                        const sageTarget = card.querySelector('#sage-target-' + id);
+                        if (sageTarget) sageTarget.innerHTML = '';
+                    }
+                }
+                return;
+            }
+
+            if(action === 'toggle-markdown' && type === 'Markdown'){
+                const textarea = card.querySelector('textarea.code');
+                const previewDiv = card.querySelector('.markdown-preview');
+                
+                if (previewDiv.classList.contains('visible')) {
+                    previewDiv.classList.remove('visible');
+                    textarea.style.display = 'block';
+                    btn.textContent = 'Lihat Preview';
+                } else {
+                    const markdownText = textarea.value;
+                    const html = marked.parse(markdownText);
+                    previewDiv.innerHTML = html;
+                    
+                    const inlineSpans = previewDiv.querySelectorAll('span.latex-inline');
+                    inlineSpans.forEach(span => {
+                        span.outerHTML = `\\(${span.textContent}\\)`;
+                    });
+
+                    const codeBlocks = previewDiv.querySelectorAll('pre > code');
+                    codeBlocks.forEach(code => {
+                        const lang = code.getAttribute('class');
+                        if (lang && (lang.includes('language-latex') || lang.includes('language-tex'))) {
+                            const content = code.textContent;
+                            const newDiv = document.createElement('div');
+                            newDiv.innerHTML = '$$' + content + '$$';
+                            code.parentNode.replaceWith(newDiv);
+                        }
+                    });
+
+                    MathJax.typesetPromise([previewDiv]).then(() => {
+                        const sageScripts = previewDiv.querySelectorAll('script[type="text/sage"]');
+                        sageScripts.forEach(script => {
+                            sagecell.makeSagecell({
+                                inputLocation: script.parentNode,
+                                template: sagecell.templates.minimal,
+                                evalButtonText: 'Jalankan Sage',
+                                code: script.textContent
+                            });
+                        });
+                    });
+
+                    previewDiv.classList.add('visible');
+                    textarea.style.display = 'none';
+                    btn.textContent = 'Lihat Kode';
+                }
+                return;
+            }
+
+            if(action === 'run-sage' && type === 'SageMath'){
+                const code = card.querySelector('textarea.code').value;
+                const target = card.querySelector('#sage-target-' + id);
+                if (!target) return;
+
+                target.innerHTML = '';
+                const sageInput = document.createElement('div');
+                sageInput.classList.add('sage-input');
+                target.appendChild(sageInput);
+                
+                const cell = sagecell.makeSagecell({
+                    inputLocation: sageInput,
+                    template: sagecell.templates.minimal,
+                    evalButtonText: 'Jalankan',
+                    code: code
+                });
+                
+                cell.input_div.style.height = 'auto';
+                cell.execute();
+                return;
+            }
+        });
+
+        btnAddMarkdown.addEventListener('click', ()=> addMarkdownEditor());
+        btnAddMathLive.addEventListener('click', ()=> addMathLiveEditor());
+        btnAddSage.addEventListener('click', ()=> addSageEditor());
+
+        btnSaveAll.addEventListener('click', ()=>{
+            const data = [];
+            document.querySelectorAll('.card').forEach(card=>{
+                const type = card.dataset.type;
+                let code = '';
+                if(type === 'MathLive'){
+                    const mathField = card.querySelector('math-field');
+                    if(mathField) code = mathField.value;
+                } else {
+                    const codeEl = card.querySelector('textarea.code');
+                    if(codeEl) code = codeEl.value;
+                }
+                data.push({ type, code });
+            });
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'multi_editors.json'; a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        btnImport.addEventListener('click', ()=> importInput.click());
+        importInput.addEventListener('change', (ev)=>{
+            const file = ev.target.files[0];
+            if(!file) return;
+            const rd = new FileReader();
+            rd.onload = e=>{
+                try{
+                    const arr = JSON.parse(e.target.result);
+                    editorsEl.innerHTML = '';
+                    nextId = 1;
+                    for(const item of arr){
+                        if(item.type === 'Markdown') addMarkdownEditor(item.code||'');
+                        else if(item.type === 'MathLive') addMathLiveEditor(item.code||'');
+                        else if(item.type === 'SageMath') addSageEditor(item.code||'');
+                    }
+                }catch(err){
+                    alert('Gagal mengimpor: '+err);
+                }
+            };
+            rd.readAsText(file);
+            ev.target.value = '';
+        });
+
+        btnClearAll.addEventListener('click', ()=>{
+            if(confirm('Hapus semua editor? Tindakan ini tidak dapat dibatalkan.')) editorsEl.innerHTML='';
+        });
+
+        btnShowGuide.addEventListener('click', () => {
+            guideModal.style.display = 'flex';
+        });
+
+        closeBtnGuide.addEventListener('click', () => {
+            guideModal.style.display = 'none';
+        });
+        
+        btnShowAIAssist.addEventListener('click', () => {
+            aiModal.style.display = 'flex';
+        });
+        
+        closeBtnAI.addEventListener('click', () => {
+            aiModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === guideModal) {
+                guideModal.style.display = 'none';
+            }
+            if (event.target === aiModal) {
+                aiModal.style.display = 'none';
+            }
+        });
+        
+        // Dark Mode
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            darkModeToggle.textContent = isDarkMode ? '☀️ Mode Terang' : '🌙 Mode Gelap';
+        });
+        
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.textContent = '☀️ Mode Terang';
+        }
+
+        addMarkdownEditor();
+        
+    </script>
+</body>
+</html>
