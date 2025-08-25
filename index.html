@@ -106,15 +106,21 @@
             background: #444;
             color: #b2d6ff;
         }
-
+        
+        /* Perubahan pada #editors untuk tata letak yang fleksibel */
         #editors {
-            max-width:1100px;
-            margin:16px auto;
-            display:grid;
-            gap:16px;
+            max-width: 1100px;
+            margin: 16px auto;
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            padding: 0 16px;
         }
-
+        
+        /* Perbaikan untuk tampilan card */
         .card {
+            width: 100%;
+            min-width: 0;
             background:var(--panel);
             border:1px solid var(--border);
             border-radius:16px;
@@ -226,16 +232,14 @@
         
         /* Tambahan Kode untuk Mengatasi Panjang Teks */
         .markdown-preview.visible {
-            max-height: 600px;
+            max-height: 400px;
             overflow-y: auto;
             display: block;
         }
-
-        .markdown-preview p {
-             max-width: 90ch;
-              margin: 10 auto;
-             text-align: justify;
-             }
+        .markdown-preview {
+            max-height: 400px;
+            overflow-y: auto;
+        }
         /* Akhir Tambahan Kode */
 
         .note {
@@ -339,8 +343,12 @@
         .sagecell_output {
             max-width: 100%;
             overflow-x: auto;
-            overflow-y: auto;
             word-wrap: break-word;
+        }
+        /* Perbaikan area Markdown agar tidak memanjang */
+        .markdown-editor-container, .markdown-preview {
+            max-width: 100%;
+            overflow-x: auto;
         }
     </style>
 </head>
@@ -634,15 +642,13 @@
             const card = createCardBase('Markdown', id);
             const bd = card.querySelector('.bd');
             bd.innerHTML = `
-                <div class="editor-content">
-                    <div class="markdown-editor-container">
-                        <textarea class="code" spellcheck="false" placeholder="Tulis kode Markdown di sini..."></textarea>
-                        <div class="markdown-preview out html-output"></div>
-                    </div>
-                    <div class="actions">
-                        <button data-action="toggle-markdown">Lihat Preview</button>
-                        <button class="secondary" data-action="clear-out">Bersihkan Output</button>
-                    </div>
+                <div class="markdown-editor-container">
+                    <textarea class="code" spellcheck="false" placeholder="Tulis kode Markdown di sini..."></textarea>
+                    <div class="markdown-preview out html-output"></div>
+                </div>
+                <div class="actions">
+                    <button data-action="toggle-markdown">Lihat Preview</button>
+                    <button class="secondary" data-action="clear-out">Bersihkan Output</button>
                 </div>
             `;
             const textarea = bd.querySelector('textarea.code');
@@ -671,15 +677,13 @@
             const card = createCardBase('SageMath', id);
             const bd = card.querySelector('.bd');
             bd.innerHTML = `
-                <div class="editor-content">
-                    <textarea class="code" spellcheck="false" placeholder="Tulis kode SageMath (Sage) di sini..."></textarea>
-                    <div class="actions">
-                        <button data-action="run-sage">▶ Jalankan Sage (cloud)</button>
-                        <button class="secondary" data-action="clear-out">Bersihkan Output</button>
-                    </div>
-                    <div class="note">Catatan: Kode dijalankan melalui <b>SageCell</b> (membutuhkan internet). Output akan muncul di bawah ini.</div>
-                    <div id="sage-target-${id}" class="out"></div>
+                <textarea class="code" spellcheck="false" placeholder="Tulis kode SageMath (Sage) di sini..."></textarea>
+                <div class="actions">
+                    <button data-action="run-sage">▶ Jalankan Sage (cloud)</button>
+                    <button class="secondary" data-action="clear-out">Bersihkan Output</button>
                 </div>
+                <div class="note">Catatan: Kode dijalankan melalui <b>SageCell</b> (membutuhkan internet). Output akan muncul di bawah ini.</div>
+                <div id="sage-target-${id}" class="out"></div>
             `;
             bd.querySelector('textarea.code').value = code || '';
             editorsEl.appendChild(card);
