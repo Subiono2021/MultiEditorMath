@@ -333,19 +333,17 @@
             border-color: var(--border) !important;
         }
         
-        /* Tambahan Kode Perbaikan Area Lebar */
+        /* Perbaikan area output SageMath agar tidak memanjang */
         .sagecell_output {
             max-width: 100%;
             overflow-x: auto;
             word-wrap: break-word;
-            white-space: pre-wrap;
         }
+        /* Perbaikan area Markdown agar tidak memanjang */
         .markdown-editor-container, .markdown-preview {
             max-width: 100%;
             overflow-x: auto;
         }
-        /* Akhir Kode Perbaikan */
-
     </style>
 </head>
 <body>
@@ -604,7 +602,7 @@
             // Konversi span kustom ke MathJax
             const inlineSpans = tempDiv.querySelectorAll('span.latex-inline');
             inlineSpans.forEach(span => {
-                span.innerHTML = `\\(${span.textContent}\\)`;
+                span.outerHTML = `\\(${span.textContent}\\)`;
             });
 
             const codeBlocks = tempDiv.querySelectorAll('pre > code');
@@ -638,13 +636,15 @@
             const card = createCardBase('Markdown', id);
             const bd = card.querySelector('.bd');
             bd.innerHTML = `
-                <div class="markdown-editor-container">
-                    <textarea class="code" spellcheck="false" placeholder="Tulis kode Markdown di sini..."></textarea>
-                    <div class="markdown-preview out html-output"></div>
-                </div>
-                <div class="actions">
-                    <button data-action="toggle-markdown">Lihat Preview</button>
-                    <button class="secondary" data-action="clear-out">Bersihkan Output</button>
+                <div class="editor-content">
+                    <div class="markdown-editor-container">
+                        <textarea class="code" spellcheck="false" placeholder="Tulis kode Markdown di sini..."></textarea>
+                        <div class="markdown-preview out html-output"></div>
+                    </div>
+                    <div class="actions">
+                        <button data-action="toggle-markdown">Lihat Preview</button>
+                        <button class="secondary" data-action="clear-out">Bersihkan Output</button>
+                    </div>
                 </div>
             `;
             const textarea = bd.querySelector('textarea.code');
@@ -673,13 +673,15 @@
             const card = createCardBase('SageMath', id);
             const bd = card.querySelector('.bd');
             bd.innerHTML = `
-                <textarea class="code" spellcheck="false" placeholder="Tulis kode SageMath (Sage) di sini..."></textarea>
-                <div class="actions">
-                    <button data-action="run-sage">▶ Jalankan Sage (cloud)</button>
-                    <button class="secondary" data-action="clear-out">Bersihkan Output</button>
+                <div class="editor-content">
+                    <textarea class="code" spellcheck="false" placeholder="Tulis kode SageMath (Sage) di sini..."></textarea>
+                    <div class="actions">
+                        <button data-action="run-sage">▶ Jalankan Sage (cloud)</button>
+                        <button class="secondary" data-action="clear-out">Bersihkan Output</button>
+                    </div>
+                    <div class="note">Catatan: Kode dijalankan melalui <b>SageCell</b> (membutuhkan internet). Output akan muncul di bawah ini.</div>
+                    <div id="sage-target-${id}" class="out"></div>
                 </div>
-                <div class="note">Catatan: Kode dijalankan melalui <b>SageCell</b> (membutuhkan internet). Output akan muncul di bawah ini.</div>
-                <div id="sage-target-${id}" class="out"></div>
             `;
             bd.querySelector('textarea.code').value = code || '';
             editorsEl.appendChild(card);
