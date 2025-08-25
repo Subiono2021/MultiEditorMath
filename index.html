@@ -6,21 +6,18 @@
     <title>Multi Editor: Markdown/NoteBook • MathLive • SageMath (Eksekusi Nyata)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
     <script src="https://unpkg.com/mathlive"></script>
-
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
-    MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$']]
-      }
-    };
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
     </script>
-
     <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
-
+    
     <style>
         :root{
             --ink:#111; --bg:#f5f5f7; --panel:#fff; --brand:#2d7ef7; --muted:#eef2f7; --danger:#e74c3c; --ok:#2ecc71;
@@ -226,6 +223,18 @@
             background: #333;
             color: #eee;
         }
+        
+        /* Tambahan Kode untuk Mengatasi Panjang Teks */
+        .markdown-preview.visible {
+            max-height: 400px;
+            overflow-y: auto;
+            display: block;
+        }
+        .markdown-preview {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        /* Akhir Tambahan Kode */
 
         .note {
             font-size:13px;
@@ -349,6 +358,7 @@
             <button id="clearAll" class="danger">🧹 Bersihkan Editor</button>
             <button id="showGuide" class="ghost">📚 Panduan</button>
             <button id="showAIAssist" class="ghost">🤖 Bantuan AI</button>
+            <button id="openColab" class="ghost">Colab</button>
             <button id="darkModeToggle" class="ghost">☀️/🌙 Mode Gelap</button>
         </div>
     </div>
@@ -360,27 +370,28 @@
             <span class="close-btn">&times;</span>
             <h2>📚 <b>Panduan Multi Editor Versi 01</b></h2>
             <p style="text-align: right; font-size: 18px;">
-              <b>
-                  قَالُوا سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنتَ الْعَلِيمُ الْحَكِيمُ
-              </b>
+                <b>
+                    قَالُوا سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنتَ الْعَلِيمُ الْحَكِيمُ
+                </b>
             </p>
             <p align="justify">
-              Selamat datang di <b>Multi Editor</b>! Alat ini dirancang sebagai ruang kerja yang fleksibel untuk 
-              berbagai kebutuhan komputasi, penelitian, dan dokumentasi. Selain itu Multi Editor ini juga
-              dirancang sebagai <b>Laboratorium Matematika berbasis Web dan Komputasi Awan</b>.
+                Selamat datang di <b>Multi Editor</b>! Alat ini dirancang sebagai ruang kerja yang fleksibel untuk 
+                berbagai kebutuhan komputasi, penelitian, dan dokumentasi. Selain itu Multi Editor ini juga
+                dirancang sebagai <b>Laboratorium Matematika berbasis Web dan Komputasi Awan</b>.
             </p>
 
             <h3>Komponen Editor</h3>
             <ul align="justify">
                 <li>
-                  <strong>Markdown/NoteBook</strong>: Gunakan untuk membuat catatan, dokumentasi, atau laporan. 
-                  Fitur ini bekerja sepenuhnya di browser Anda.
+                    <strong>Markdown/NoteBook</strong>: Gunakan untuk membuat catatan, dokumentasi, atau laporan. 
+                    Fitur ini bekerja sepenuhnya di browser Anda.
                 </li>
                 <li>
-                  <strong>MathLive</strong>: Editor interaktif untuk menulis persamaan matematika kompleks dalam format <b>$\LaTeX$</b>. 
-                  Hasilnya langsung terlihat saat Anda mengetik dan sangat berguna untuk menampilkan simbol-simbol matematika.</li>
+                    <strong>MathLive</strong>: Editor interaktif untuk menulis persamaan matematika kompleks dalam format <b>$\LaTeX$</b>. 
+                    Hasilnya langsung terlihat saat Anda mengetik dan sangat berguna untuk menampilkan simbol-simbol matematika.
+                </li>
                 <li><strong>SageMath (SageCell)</strong>: Lingkungan komputasi aljabar yang kuat. Kode Anda dikirim dan 
-                  dieksekusi di server cloud SageCell, sangat berguna untuk perhitungan yang berat.
+                    dieksekusi di server cloud SageCell, sangat berguna untuk perhitungan yang berat.
                 </li>
             </ul>
 
@@ -388,46 +399,51 @@
             
             <h3>Fungsionalitas Tambahan</h3>
             <ul align="justify">
-              <li>
-                <strong>💾 Simpan Semua</strong>: Fungsi ini akan mengunduh semua konten dari setiap editor yang ada di halaman ke dalam satu file. File ini berformat JSON (`.json`) dan dapat digunakan untuk mengembalikan semua editor Anda di lain waktu.
-              </li>
-              <li>
-                <strong>📂 Import File</strong>: Tombol ini memungkinkan Anda mengunggah file `.json` yang sebelumnya Anda simpan. Setelah diimpor, semua editor yang ada dalam file tersebut akan dimuat kembali ke halaman.
-              </li>
-              <li>
-                <strong>🧹 Bersihkan Editor</strong>: Tombol ini akan menghapus semua editor yang saat ini ada di halaman. Gunakan tombol ini untuk memulai dari awal.
-              </li>
-              <li>
-                <strong>☀️/🌙 Mode Gelap</strong>: Tombol ini memungkinkan Anda beralih antara tema tampilan terang dan gelap. Pengaturan pilihan tema akan disimpan di browser Anda sehingga akan tetap sama saat Anda kembali mengunjungi halaman ini.
-              </li>
+                <li>
+                    <strong>💾 Simpan Semua</strong>: Fungsi ini akan mengunduh semua konten dari setiap editor yang ada di halaman ke dalam satu file. File ini berformat JSON (`.json`) dan dapat digunakan untuk mengembalikan semua editor Anda di lain waktu.
+                </li>
+                <li>
+                    <strong>📂 Import File</strong>: Tombol ini memungkinkan Anda mengunggah file `.json` yang sebelumnya Anda simpan. Setelah diimpor, semua editor yang ada dalam file tersebut akan dimuat kembali ke halaman.
+                </li>
+                <li>
+                    <strong>🧹 Bersihkan Editor</strong>: Tombol ini akan menghapus semua editor yang saat ini ada di halaman. Gunakan tombol ini untuk memulai dari awal.
+                </li>
+                <li>
+                    <strong>☀️/🌙 Mode Gelap</strong>: Tombol ini memungkinkan Anda beralih antara tema tampilan terang dan gelap. Pengaturan pilihan tema akan disimpan di browser Anda sehingga akan tetap sama saat Anda kembali mengunjungi halaman ini.
+                </li>
             </ul>
 
             <hr>
-
-            <h3>Relevansi di Era AI dan Komputasi Awan</h3>  
+            
+            <h3>Relevansi di Era AI dan Komputasi Awan</h3> 
             <p align="justify">
-              Alat Multi Editor ini dirancang untuk proses pembelajaran dan kerja di era modern yang sangat dipengaruhi oleh 
-              <b>Kecerdasan Buatan (AI)</b> dan <b>Komputasi Awan (<i>Cloud Computing</i>)</b>.</p>
+                Alat Multi Editor ini dirancang untuk proses pembelajaran dan kerja di era modern yang sangat dipengaruhi oleh 
+                <b>Kecerdasan Buatan (AI)</b> dan <b>Komputasi Awan (<i>Cloud Computing</i>)</b>.</p>
             <p><strong>Kenapa penting?</strong></p>
             <p align="justify">
-              Di masa depan, pekerjaan akan semakin bergantung pada kemampuan untuk <b>berinteraksi dengan AI</b> dan 
-              <b>memanfaatkan sumber daya komputasi awan</b>. Multi Editor ini adalah simulasi sederhana dari ekosistem tersebut:
+                Di masa depan, pekerjaan akan semakin bergantung pada kemampuan untuk <b>berinteraksi dengan AI</b> dan 
+                <b>memanfaatkan sumber daya komputasi awan</b>. Multi Editor ini adalah simulasi sederhana dari ekosistem tersebut:
             </p>
             <ul align="justify">
                 <li>
-                  Anda bisa menggunakan editor Markdown untuk mencatat ide atau instruksi, seolah-olah Anda sedang berinteraksi 
-                  dengan model <b>AI generatif</b>.
+                    Anda bisa menggunakan editor Markdown untuk mencatat ide atau instruksi, seolah-olah Anda sedang berinteraksi 
+                    dengan model <b>AI generatif</b>.
                 </li>
                 <li>
-                  Anda dapat menggunakan SageMath untuk melakukan perhitungan yang kompleks. Ini mirip dengan cara para 
-                  ilmuwan dan insinyur menggunakan platform komputasi awan untuk menjalankan model AI yang membutuhkan 
-                  daya pemrosesan tinggi, tanpa harus memiliki superkomputer sendiri.
+                    Anda dapat menggunakan SageMath untuk melakukan perhitungan yang kompleks. Ini mirip dengan cara para 
+                    ilmuwan dan insinyur menggunakan platform komputasi awan untuk menjalankan model AI yang membutuhkan 
+                    daya pemrosesan tinggi, tanpa harus memiliki superkomputer sendiri.
+                </li>
+                <li>
+                    Tombol **Colab** akan membuka Google Colaboratory di tab baru. Colab adalah alat berbasis cloud yang sangat kuat untuk 
+                    menjalankan kode **Python** dan terintegrasi dengan berbagai pustaka untuk pembelajaran mesin (machine learning) dan 
+                    analisis data. Ini adalah contoh nyata bagaimana komputasi awan dimanfaatkan di bidang ilmiah dan rekayasa.
                 </li>
             </ul>
             <p align="justify">
-              Menguasai alat-alat seperti ini berarti Anda sedang melatih diri untuk berpikir secara 
-              <b>komputasional</b> dan memanfaatkan teknologi cloud, sebuah keahlian fundamental di dunia yang didorong oleh AI.
-            </p>    
+                Menguasai alat-alat seperti ini berarti Anda sedang melatih diri untuk berpikir secara 
+                <b>komputasional</b> dan memanfaatkan teknologi cloud, sebuah keahlian fundamental di dunia yang didorong oleh AI.
+            </p>     
         </div>
     </div>
     
@@ -436,45 +452,45 @@
             <span class="close-btn-ai">&times;</span>
             <h2>🤖 Bantuan AI (Google Gemini)</h2>
             <p style="text-align: right; font-size: 18px;">
-              <b>
-                  يَرْفَعِ ٱللَّهُ ٱلَّذِينَ ءَامَنُوا۟ مِنكُمْ وَٱلَّذِينَ أُوتُوا۟ ٱلْعِلْمَ دَرَجَٰتٍ ۚ وَٱللَّهُ بِمَا تَعْمَلُونَ خَبِيرٌ
-              </b>
+                <b>
+                    يَرْفَعِ ٱللَّهُ ٱلَّذِينَ ءَامَنُوا۟ مِنكُمْ وَٱلَّذِينَ أُوتُوا۟ ٱلْعِلْمَ دَرَجَٰتٍ ۚ وَٱللَّهُ بِمَا تَعْمَلُونَ خَبِيرٌ
+                </b>
             </p>
             <p style="text-align: right; font-size: 18px;">
-              <b>
-                    قَالَ النَّبِيُّ ﷺ:
-مَنْ كَتَمَ عِلْمًا أُلْجِمَ يَوْمَ الْقِيَامَةِ بِلِجَامٍ مِنْ نَارٍ          
-                   — رواه ابن ماجه والترمذي             
-              </b>
+                <b>
+                    قَالَ النَّبِيُّ ﷺ:
+مَنْ كَتَمَ عِلْمًا أُلْجِمَ يَوْمَ الْقِيَامَةِ بِلِجَامٍ مِنْ نَارٍ      
+                    — رواه ابن ماجه والترمذي      
+                </b>
             </p>
             <p align="justify">
-              Karena alasan keamanan dan teknis, alat ini tidak bisa langsung terintegrasi dengan Google Gemini.
+                Karena alasan keamanan dan teknis, alat ini tidak bisa langsung terintegrasi dengan Google Gemini.
             </p>
             <p align="justify">
-              Namun, Anda bisa <b>memanfaatkan Google Gemini atau ChatGpt sebagai asisten</b> dengan cara berikut:
+                Namun, Anda bisa <b>memanfaatkan Google Gemini atau ChatGpt sebagai asisten</b> dengan cara berikut:
             </p>
             <ul align="justify">
                 <li>
-                  Buka <a href="https://gemini.google.com" target="_blank"><b><mark>gemini.google.com</mark></b></a> atau
-                  <a href="https://chatgpt.com/" target="_blank"><b><mark>chatgpt.com</mark></b></a> di tab baru pada browser Anda.
+                    Buka <a href="https://gemini.google.com" target="_blank"><b><mark>gemini.google.com</mark></b></a> atau
+                    <a href="https://chatgpt.com/" target="_blank"><b><mark>chatgpt.com</mark></b></a> di tab baru pada browser Anda.
                 </li>
                 <li>
-                  Gunakan Gemini untuk atau ChatGpt <b>membuat draf konten Markdown</b>, seperti artikel, daftar, atau catatan. 
-                  Cukup salin dan tempel/<i>copy paste</i> hasilnya ke editor Markdown di sini.
+                    Gunakan Gemini untuk atau ChatGpt <b>membuat draf konten Markdown</b>, seperti artikel, daftar, atau catatan. 
+                    Cukup salin dan tempel/<i>copy paste</i> hasilnya ke editor Markdown di sini.
                 </li>
                 <li>
-                  Minta Gemini atau ChatGpt untuk <b>membuat atau memverifikasi kode SageMath</b>. Salin kode yang dihasilkan dan 
-                  jalankan di editor SageMath. Contoh prompt: <code>Buatkan saya kode SageMath untuk menghitung turunan dari 
-                  f(x) = x^2 * sin(x)</code>.
+                    Minta Gemini atau ChatGpt untuk <b>membuat atau memverifikasi kode SageMath</b>. Salin kode yang dihasilkan dan 
+                    jalankan di editor SageMath. Contoh prompt: <code>Buatkan saya kode SageMath untuk menghitung turunan dari 
+                    f(x) = x^2 * sin(x)</code>.
                 </li>
                 <li>
-                  Tanyakan kepada Gemini tentang <b>persamaan matematika atau formula $\LaTeX$</b> yang bisa Anda gunakan di editor 
-                  MathLive.
+                    Tanyakan kepada Gemini tentang <b>persamaan matematika atau formula $\LaTeX$</b> yang bisa Anda gunakan di editor 
+                    MathLive.
                 </li>
             </ul>
             <p align="justify">
-              Dengan cara ini, Anda dapat menggabungkan kemampuan <b>AI generatif</b> dari Gemini dengan alat komputasi 
-              yang ada di <b>Multi Editor</b>.
+                Dengan cara ini, Anda dapat menggabungkan kemampuan <b>AI generatif</b> dari Gemini dengan alat komputasi 
+                yang ada di <b>Multi Editor</b>.
             </p>
         </div>
     </div>
@@ -497,6 +513,7 @@
         const aiModal = document.getElementById('aiModal');
         const closeBtnAI = document.querySelector('.close-btn-ai');
         
+        const openColabBtn = document.getElementById('openColab');
         const darkModeToggle = document.getElementById('darkModeToggle');
 
         let nextId = 1;
@@ -808,59 +825,70 @@
                         else if(item.type === 'MathLive') addMathLiveEditor(item.code||'');
                         else if(item.type === 'SageMath') addSageEditor(item.code||'');
                     }
-                }catch(err){
-                    alert('Gagal mengimpor: '+err);
+                } catch(err){
+                    alert("Gagal memuat file. Pastikan formatnya benar.");
+                    console.error('Error importing file: ', err);
                 }
             };
             rd.readAsText(file);
-            ev.target.value = '';
         });
 
         btnClearAll.addEventListener('click', ()=>{
-            if(confirm('Hapus semua editor? Tindakan ini tidak dapat dibatalkan.')) editorsEl.innerHTML='';
+            if(confirm('Apakah Anda yakin ingin menghapus semua editor? Tindakan ini tidak dapat dibatalkan.')){
+                editorsEl.innerHTML = '';
+                nextId = 1;
+            }
         });
 
-        btnShowGuide.addEventListener('click', () => {
+        btnShowGuide.addEventListener('click', ()=>{
             guideModal.style.display = 'flex';
         });
 
-        closeBtnGuide.addEventListener('click', () => {
+        closeBtnGuide.addEventListener('click', ()=>{
             guideModal.style.display = 'none';
         });
-        
-        btnShowAIAssist.addEventListener('click', () => {
+
+        btnShowAIAssist.addEventListener('click', ()=>{
             aiModal.style.display = 'flex';
         });
-        
-        closeBtnAI.addEventListener('click', () => {
+
+        closeBtnAI.addEventListener('click', ()=>{
             aiModal.style.display = 'none';
         });
 
-        window.addEventListener('click', (event) => {
-            if (event.target === guideModal) {
-                guideModal.style.display = 'none';
-            }
-            if (event.target === aiModal) {
-                aiModal.style.display = 'none';
-            }
+        // Event listener untuk tombol "Colab"
+        openColabBtn.addEventListener('click', () => {
+            window.open('https://colab.research.google.com/', '_blank');
         });
-        
-        // Dark Mode
-        darkModeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDarkMode);
-            darkModeToggle.textContent = isDarkMode ? '☀️ Mode Terang' : '🌙 Mode Gelap';
-        });
-        
-        const isDarkMode = localStorage.getItem('darkMode') === 'true';
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-            darkModeToggle.textContent = '☀️ Mode Terang';
-        }
 
-        addMarkdownEditor();
+        window.addEventListener('click', (event)=>{
+            if (event.target == guideModal) {
+                guideModal.style.display = "none";
+            }
+            if (event.target == aiModal) {
+                aiModal.style.display = "none";
+            }
+        });
+
+        // Dark Mode Toggle Logic
+        const applyDarkMode = (isDark) => {
+            document.body.classList.toggle('dark-mode', isDark);
+            localStorage.setItem('darkMode', isDark);
+        };
+
+        const currentMode = localStorage.getItem('darkMode') === 'true';
+        applyDarkMode(currentMode);
+
+        darkModeToggle.addEventListener('click', () => {
+            const isDark = !document.body.classList.contains('dark-mode');
+            applyDarkMode(isDark);
+        });
         
+        // Load initial editors
+        document.addEventListener('DOMContentLoaded', () => {
+            addMarkdownEditor();
+        });
+
     </script>
 </body>
 </html>
