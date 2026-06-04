@@ -7,17 +7,22 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://unpkg.com/mathlive"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
     <script>
-        MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            }
-        };
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\[', '\]']]
+        }
+      };
     </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
-    
+
     <style>
         :root{
             --ink:#111; --bg:#f5f5f7; --panel:#fff; --brand:#2d7ef7; --muted:#eef2f7; --danger:#e74c3c; --ok:#2ecc71;
@@ -106,21 +111,15 @@
             background: #444;
             color: #b2d6ff;
         }
-        
-        /* Perubahan pada #editors untuk tata letak yang fleksibel */
+
         #editors {
-            max-width: 1100px;
-            margin: 16px auto;
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            padding: 0 16px;
+            max-width:1100px;
+            margin:16px auto;
+            display:grid;
+            gap:16px;
         }
-        
-        /* Perbaikan untuk tampilan card */
+
         .card {
-            width: 100%;
-            min-width: 0;
             background:var(--panel);
             border:1px solid var(--border);
             border-radius:16px;
@@ -229,18 +228,6 @@
             background: #333;
             color: #eee;
         }
-        
-        /* Tambahan Kode untuk Mengatasi Panjang Teks */
-        .markdown-preview.visible {
-            max-height: 400px;
-            overflow-y: auto;
-            display: block;
-        }
-        .markdown-preview {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        /* Akhir Tambahan Kode */
 
         .note {
             font-size:13px;
@@ -338,17 +325,82 @@
             background-color: var(--bg) !important;
             border-color: var(--border) !important;
         }
-        
-        /* Perbaikan area output SageMath agar tidak memanjang */
-        .sagecell_output {
-            max-width: 100%;
-            overflow-x: auto;
-            word-wrap: break-word;
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid #1a365d;
         }
-        /* Perbaikan area Markdown agar tidak memanjang */
-        .markdown-editor-container, .markdown-preview {
-            max-width: 100%;
-            overflow-x: auto;
+        th, td {
+            padding: 14px 18px;
+            text-align: left;
+            border: 1px solid #444444;
+        }
+        th {
+            background-color: #1a365d;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            border-bottom: 3px solid #1a365d;
+        }
+        tr:nth-child(odd) {
+            background-color: #1e1e1e;
+        }
+        tr:nth-child(odd) td {
+            color: #ffffff;
+        }
+        tr:nth-child(odd) td strong {
+            color: #63b3ed;
+        }
+        tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+        tr:nth-child(even) td {
+            color: #1a202c;
+        }
+        tr:nth-child(even) td strong {
+            color: #2b6cb0;
+        }
+        tr:hover {
+            background-color: #2d3748 !important;
+        }
+        tr:hover td {
+            color: #ffffff !important;
+        }
+        tr:hover td strong {
+            color: #63b3ed !important;
+        }
+
+        /* Like button style */
+        #likeButton {
+            font-size: 1.4rem;
+            padding: 6px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--brand);
+            color: white;
+            border-radius: 40px;
+            transition: 0.2s;
+        }
+        #likeButton:hover {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+        }
+        #likeButton:active {
+            transform: scale(0.98);
+        }
+        .like-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -359,8 +411,13 @@
                 Multi Editor: <span class="badge">Markdown/NoteBook</span> • <span class="badge">MathLive</span> • <span class="badge">
                 SageMath (SageCell)</span> • <span class="badge">Sebagai Laboratorium Matematika berbasis Web</span>
             </h1>
-            <div class="note">Markdown/NoteBook dieksekusi <b>lokal di browser</b> via marked.js. MathLive adalah editor 
-                matematika interaktif. SageMath dieksekusi <b>di cloud</b> via SageCell.</div>
+            <div class="note">
+			Markdown/NoteBook dieksekusi <b>lokal di browser</b> via marked.js. MathLive adalah editor 
+                matematika interaktif. SageMath dieksekusi <b>di cloud</b> via SageCell.
+			</div>
+			<div class="note">
+		This interactive Mathematics Laboratory is the result of a collaboration between: BiMath, DeepSeek, and Gemini.
+		</div>
         </div>
     </header>
 
@@ -375,7 +432,6 @@
             <button id="clearAll" class="danger">🧹 Bersihkan Editor</button>
             <button id="showGuide" class="ghost">📚 Panduan</button>
             <button id="showAIAssist" class="ghost">🤖 Bantuan AI</button>
-            <button id="openColab" class="ghost">Colab</button>
             <button id="darkModeToggle" class="ghost">☀️/🌙 Mode Gelap</button>
         </div>
     </div>
@@ -387,132 +443,120 @@
             <span class="close-btn">&times;</span>
             <h2>📚 <b>Panduan Multi Editor Versi 01</b></h2>
             <p style="text-align: right; font-size: 18px;">
-                <b>
-                    قَالُوا سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنتَ الْعَلِيمُ الْحَكِيمُ
-                </b>
+              <b>
+                  قَالُوا سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنتَ الْعَلِيمُ الْحَكِيمُ
+              </b>
             </p>
             <p align="justify">
-                Selamat datang di <b>Multi Editor</b>! Alat ini dirancang sebagai ruang kerja yang fleksibel untuk 
-                berbagai kebutuhan komputasi, penelitian, dan dokumentasi. Selain itu Multi Editor ini juga
-                dirancang sebagai <b>Laboratorium Matematika berbasis Web dan Komputasi Awan</b>.
+              Selamat datang di <b>Multi Editor</b>! Alat ini dirancang sebagai ruang kerja yang fleksibel untuk 
+              berbagai kebutuhan komputasi, penelitian, dan dokumentasi. Selain itu Multi Editor ini juga
+              dirancang sebagai <b>Laboratorium Matematika berbasis Web dan Komputasi Awan</b>.
             </p>
 
             <h3>Komponen Editor</h3>
             <ul align="justify">
                 <li>
-                    <strong>Markdown/NoteBook</strong>: Gunakan untuk membuat catatan, dokumentasi, atau laporan. 
-                    Fitur ini bekerja sepenuhnya di browser Anda.
+                  <strong>Markdown/NoteBook</strong>: Gunakan untuk membuat catatan, dokumentasi, atau laporan. 
+                  Fitur ini bekerja sepenuhnya di browser Anda.
                 </li>
                 <li>
-                    <strong>MathLive</strong>: Editor interaktif untuk menulis persamaan matematika kompleks dalam format <b>$\LaTeX$</b>. 
-                    Hasilnya langsung terlihat saat Anda mengetik dan sangat berguna untuk menampilkan simbol-simbol matematika.
-                </li>
+                  <strong>MathLive</strong>: Editor interaktif untuk menulis persamaan matematika kompleks dalam format <b>$\LaTeX$</b>. 
+                  Hasilnya langsung terlihat saat Anda mengetik dan sangat berguna untuk menampilkan simbol-simbol matematika.</li>
                 <li><strong>SageMath (SageCell)</strong>: Lingkungan komputasi aljabar yang kuat. Kode Anda dikirim dan 
-                    dieksekusi di server cloud SageCell, sangat berguna untuk perhitungan yang berat.
+                  dieksekusi di server cloud SageCell, sangat berguna untuk perhitungan yang berat.
                 </li>
+				<li><b>🤖 Bantuan AI:</b> Disini anda bisa beriteraksi dengan <b>Gemini-AI</b>. Silahkan anda bertanya apa saja tentang matematika atau yang lainnya. Tentunya anda harus jaga <a href="https://subiono2021.github.io/BiMath_AI/" target="_blank" style="color:#ffffff;"><b>ETIKA-AI</b></a> dalam bertanya! Bila anda suka, silahkan tekan ❤️.</li>
             </ul>
 
             <hr>
             
             <h3>Fungsionalitas Tambahan</h3>
             <ul align="justify">
-                <li>
-                    <strong>💾 Simpan Semua</strong>: Fungsi ini akan mengunduh semua konten dari setiap editor yang ada di halaman ke dalam satu file. File ini berformat JSON (`.json`) dan dapat digunakan untuk mengembalikan semua editor Anda di lain waktu.
-                </li>
-                <li>
-                    <strong>📂 Import File</strong>: Tombol ini memungkinkan Anda mengunggah file `.json` yang sebelumnya Anda simpan. Setelah diimpor, semua editor yang ada dalam file tersebut akan dimuat kembali ke halaman.
-                </li>
-                <li>
-                    <strong>🧹 Bersihkan Editor</strong>: Tombol ini akan menghapus semua editor yang saat ini ada di halaman. Gunakan tombol ini untuk memulai dari awal.
-                </li>
-                <li>
-                    <strong>☀️/🌙 Mode Gelap</strong>: Tombol ini memungkinkan Anda beralih antara tema tampilan terang dan gelap. Pengaturan pilihan tema akan disimpan di browser Anda sehingga akan tetap sama saat Anda kembali mengunjungi halaman ini.
-                </li>
+              <li>
+                <strong>💾 Simpan Semua</strong>: Fungsi ini akan mengunduh semua konten dari setiap editor yang ada di halaman ke dalam satu file. File ini berformat JSON (`.json`) dan dapat digunakan untuk mengembalikan semua editor Anda di lain waktu.
+              </li>
+              <li>
+                <strong>📂 Import File</strong>: Tombol ini memungkinkan Anda mengunggah file `.json` yang sebelumnya Anda simpan. Setelah diimpor, semua editor yang ada dalam file tersebut akan dimuat kembali ke halaman.
+              </li>
+              <li>
+                <strong>🧹 Bersihkan Editor</strong>: Tombol ini akan menghapus semua editor yang saat ini ada di halaman. Gunakan tombol ini untuk memulai dari awal.
+              </li>
+              <li>
+                <strong>☀️/🌙 Mode Gelap</strong>: Tombol ini memungkinkan Anda beralih antara tema tampilan terang dan gelap. Pengaturan pilihan tema akan disimpan di browser Anda sehingga akan tetap sama saat Anda kembali mengunjungi halaman ini.
+              </li>
             </ul>
 
             <hr>
-            
-            <h3>Relevansi di Era AI dan Komputasi Awan</h3> 
+
+            <h3>Relevansi di Era AI dan Komputasi Awan</h3>  
             <p align="justify">
-                Alat Multi Editor ini dirancang untuk proses pembelajaran dan kerja di era modern yang sangat dipengaruhi oleh 
-                <b>Kecerdasan Buatan (AI)</b> dan <b>Komputasi Awan (<i>Cloud Computing</i>)</b>.</p>
+              Alat Multi Editor ini dirancang untuk proses pembelajaran dan kerja di era modern yang sangat dipengaruhi oleh 
+              <b>Kecerdasan Buatan (AI)</b> dan <b>Komputasi Awan (<i>Cloud Computing</i>)</b>.</p>
             <p><strong>Kenapa penting?</strong></p>
             <p align="justify">
-                Di masa depan, pekerjaan akan semakin bergantung pada kemampuan untuk <b>berinteraksi dengan AI</b> dan 
-                <b>memanfaatkan sumber daya komputasi awan</b>. Multi Editor ini adalah simulasi sederhana dari ekosistem tersebut:
+              Di masa depan, pekerjaan akan semakin bergantung pada kemampuan untuk <b>berinteraksi dengan AI</b> dan 
+              <b>memanfaatkan sumber daya komputasi awan</b>. Multi Editor ini adalah simulasi sederhana dari ekosistem tersebut:
             </p>
             <ul align="justify">
                 <li>
-                    Anda bisa menggunakan editor Markdown untuk mencatat ide atau instruksi, seolah-olah Anda sedang berinteraksi 
-                    dengan model <b>AI generatif</b>.
+                  Anda bisa menggunakan editor Markdown untuk mencatat ide atau instruksi, seolah-olah Anda sedang berinteraksi 
+                  dengan model <b>AI generatif</b>.
                 </li>
                 <li>
-                    Anda dapat menggunakan SageMath untuk melakukan perhitungan yang kompleks. Ini mirip dengan cara para 
-                    ilmuwan dan insinyur menggunakan platform komputasi awan untuk menjalankan model AI yang membutuhkan 
-                    daya pemrosesan tinggi, tanpa harus memiliki superkomputer sendiri.
-                </li>
-                <li>
-                    Tombol **Colab** akan membuka Google Colaboratory di tab baru. Colab adalah alat berbasis cloud yang sangat kuat untuk 
-                    menjalankan kode **Python** dan terintegrasi dengan berbagai pustaka untuk pembelajaran mesin (machine learning) dan 
-                    analisis data. Ini adalah contoh nyata bagaimana komputasi awan dimanfaatkan di bidang ilmiah dan rekayasa.
+                  Anda dapat menggunakan SageMath untuk melakukan perhitungan yang kompleks. Ini mirip dengan cara para 
+                  ilmuwan dan insinyur menggunakan platform komputasi awan untuk menjalankan model AI yang membutuhkan 
+                  daya pemrosesan tinggi, tanpa harus memiliki superkomputer sendiri.
                 </li>
             </ul>
             <p align="justify">
-                Menguasai alat-alat seperti ini berarti Anda sedang melatih diri untuk berpikir secara 
-                <b>komputasional</b> dan memanfaatkan teknologi cloud, sebuah keahlian fundamental di dunia yang didorong oleh AI.
-            </p>     
+              Menguasai alat-alat seperti ini berarti Anda sedang melatih diri untuk berpikir secara 
+              <b>komputasional</b> dan memanfaatkan teknologi cloud, sebuah keahlian fundamental di dunia yang didorong oleh AI.
+            </p>    
         </div>
     </div>
     
     <div id="aiModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 800px;">
             <span class="close-btn-ai">&times;</span>
-            <h2>🤖 Bantuan AI (Google Gemini)</h2>
-            <p style="text-align: right; font-size: 18px;">
-                <b>
-                    يَرْفَعِ ٱللَّهُ ٱلَّذِينَ ءَامَنُوا۟ مِنكُمْ وَٱلَّذِينَ أُوتُوا۟ ٱلْعِلْمَ دَرَجَٰتٍ ۚ وَٱللَّهُ بِمَا تَعْمَلُونَ خَبِيرٌ
-                </b>
+            <h2>🤖 Asisten AI Terintegrasi (Google Gemini)</h2>
+            <p style="text-align: right; font-size: 16px; margin-top: 0;">
+                <b>يَرْفَعِ ٱللَّهُ ٱلَّذِينَ ءَامَنُوا۟ مِنكُمْ وَٱلَّذِينَ أُوتُوا۟ ٱلْعِلْمَ دَرَجَٰتٍ</b>
             </p>
             <p style="text-align: right; font-size: 18px;">
-                <b>
-                    قَالَ النَّبِيُّ ﷺ:
-مَنْ كَتَمَ عِلْمًا أُلْجِمَ يَوْمَ الْقِيَامَةِ بِلِجَامٍ مِنْ نَارٍ      
-                    — رواه ابن ماجه والترمذي      
-                </b>
+                  <b>
+                        قَالَ النَّبِيُّ ﷺ:
+مَنْ كَتَمَ عِلْمًا أُلْجِمَ يَوْمَ الْقِيَامَةِ بِلِجَامٍ مِنْ نَارٍ          
+                       — رواه ابن ماجه والترمذي             
+                  </b>
             </p>
-            <p align="justify">
-                Karena alasan keamanan dan teknis, alat ini tidak bisa langsung terintegrasi dengan Google Gemini.
-            </p>
-            <p align="justify">
-                Namun, Anda bisa <b>memanfaatkan Google Gemini atau ChatGpt sebagai asisten</b> dengan cara berikut:
-            </p>
-            <ul align="justify">
-                <li>
-                    Buka <a href="https://gemini.google.com" target="_blank"><b><mark>gemini.google.com</mark></b></a> atau
-                    <a href="https://chatgpt.com/" target="_blank"><b><mark>chatgpt.com</mark></b></a> di tab baru pada browser Anda.
-                </li>
-                <li>
-                    Gunakan Gemini untuk atau ChatGpt <b>membuat draf konten Markdown</b>, seperti artikel, daftar, atau catatan. 
-                    Cukup salin dan tempel/<i>copy paste</i> hasilnya ke editor Markdown di sini.
-                </li>
-                <li>
-                    Minta Gemini atau ChatGpt untuk <b>membuat atau memverifikasi kode SageMath</b>. Salin kode yang dihasilkan dan 
-                    jalankan di editor SageMath. Contoh prompt: <code>Buatkan saya kode SageMath untuk menghitung turunan dari 
-                    f(x) = x^2 * sin(x)</code>.
-                </li>
-                <li>
-                    Tanyakan kepada Gemini tentang <b>persamaan matematika atau formula $\LaTeX$</b> yang bisa Anda gunakan di editor 
-                    MathLive.
-                </li>
-            </ul>
-            <p align="justify">
-                Dengan cara ini, Anda dapat menggabungkan kemampuan <b>AI generatif</b> dari Gemini dengan alat komputasi 
-                yang ada di <b>Multi Editor</b>.
-            </p>
+
+            <!-- LIKE COUNTER SECTION (Firebase) -->
+            <div class="like-container">
+                <button id="likeButton" class="ghost">❤️ <span id="likeCount">0</span></button>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <label for="ai-prompt" style="font-weight: bold; display: block; margin-bottom: 8px;">Tanyakan sesuatu tentang Matematika, LaTeX, atau SageMath:</label>
+                <textarea id="ai-prompt" class="code" style="height: 100px; margin-bottom: 10px;" placeholder="Contoh: Buatkan kode SageMath untuk menghitung nilai eigen matriks 3x3 pembawa nilai..."></textarea>
+                
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="btn-ask-gemini">✨ Tanyakan Gemini AI</button>
+                    <button id="btn-copy-ai" class="secondary">📋 Salin Jawaban</button>
+                    <button id="btn-clear-ai" class="danger">🧹 Bersihkan Konten</button>
+                </div>
+                <p id="ai-loading" style="display: none; color: var(--brand); font-weight: bold; margin-top: 8px;">🔄 Sedang memproses penalaran AI...</p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+            
+            <h3>Hasil Respons AI:</h3>
+            <div id="ai-output" class="out html-output tex2jax_process" style="min-height: 120px; max-height: 350px; overflow-y: auto; border: 1px solid var(--border);">
+                Silakan ketik pertanyaan atau draf instruksi di atas, lalu klik tombol untuk mendapatkan bantuan jawaban cerdas.
+            </div>
         </div>
     </div>
 
-    <script>
+   <script>
         // ===================== STATE & HELPERS =====================
         const editorsEl = document.getElementById('editors');
         const btnAddMarkdown = document.getElementById('addMarkdown');
@@ -525,19 +569,16 @@
         const btnShowGuide = document.getElementById('showGuide');
         const guideModal = document.getElementById('guideModal');
         const closeBtnGuide = document.querySelector('.close-btn');
-
         const btnShowAIAssist = document.getElementById('showAIAssist');
         const aiModal = document.getElementById('aiModal');
         const closeBtnAI = document.querySelector('.close-btn-ai');
-        
-        const openColabBtn = document.getElementById('openColab');
         const darkModeToggle = document.getElementById('darkModeToggle');
 
         let nextId = 1;
 
-        function makeId(){ return 'ed-'+(nextId++); }
+        function makeId() { return 'ed-' + (nextId++); }
 
-        function createCardBase(label, id){
+        function createCardBase(label, id) {
             const card = document.createElement('section');
             card.className = 'card';
             card.dataset.id = id;
@@ -558,7 +599,6 @@
             return card;
         }
 
-        // Fungsi bantuan untuk menyalin teks
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 alert("Teks berhasil disalin!");
@@ -567,77 +607,36 @@
                 alert("Gagal menyalin teks.");
             });
         }
-        
-        // Konfigurasi marked.js untuk tidak mengganggu sintaks LaTeX.
+
+        // Konfigurasi Marked.js
         marked.use({
-            renderer: {
-                code(code, lang, escaped) {
-                    if (lang === 'latex' || lang === 'tex') {
-                        return '$$' + code + '$$';
-                    }
-                    return marked.Renderer.prototype.code.call(this, code, lang, escaped);
-                }
-            },
             tokenizer: {
-                codespan(src) {
-                    const match = src.match(/^\`([^\`]*)\`/); // Inline code
+                inlineText(src) {
+                    const match = src.match(/^(\$\$[\s\S]+?\$\$|\$[\s\S]+?\$)/);
                     if (match) {
                         return {
-                            type: 'codespan',
+                            type: 'text',
                             raw: match[0],
-                            text: match[1].trim()
+                            text: match[0]
                         };
                     }
-                }
-            },
-            walkTokens(token) {
-                if (token.type === 'paragraph' || token.type === 'list_item') {
-                    // Cek untuk inline math
-                    token.text = token.text.replace(/\$(.*?)\$/g, (match, p1) => {
-                        return '<span class="latex-inline">' + p1.trim() + '</span>';
-                    });
+                    return false;
                 }
             }
         });
 
-        function renderMarkdown(markdownText) {
+        function renderMarkdownAndMath(markdownText) {
             const html = marked.parse(markdownText);
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
-            
-            // Konversi span kustom ke MathJax
-            const inlineSpans = tempDiv.querySelectorAll('span.latex-inline');
-            inlineSpans.forEach(span => {
-                span.outerHTML = `\\(${span.textContent}\\)`;
-            });
-
-            const codeBlocks = tempDiv.querySelectorAll('pre > code');
-            codeBlocks.forEach(code => {
-                const lang = code.getAttribute('class');
-                if (lang && (lang.includes('language-latex') || lang.includes('language-tex'))) {
-                    const content = code.textContent;
-                    const newDiv = document.createElement('div');
-                    newDiv.innerHTML = '$$' + content + '$$';
-                    code.parentNode.replaceWith(newDiv);
-                }
-            });
-
-            MathJax.typesetPromise([tempDiv]).then(() => {
-                const sageScripts = tempDiv.querySelectorAll('script[type="text/sage"]');
-                sageScripts.forEach(script => {
-                    sagecell.makeSagecell({
-                        inputLocation: script.parentNode,
-                        template: sagecell.templates.minimal,
-                        evalButtonText: 'Jalankan Sage',
-                        code: script.textContent
-                    });
-                });
-            });
-
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise([tempDiv]).catch(err => console.error("MathJax error:", err));
+            }
             return tempDiv.innerHTML;
         }
-        
-        function addMarkdownEditor(code="# Judul\n\nIni adalah contoh editor **Markdown**.\n\n* Item 1\n* Item 2\n\nPersamaan linear: $y=mx+c$\n\nPersamaan kuadrat:\n```latex\nx = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}\n```"){
+
+        // ===================== EDITOR MANAGER =====================
+        function addMarkdownEditor(code = "# Judul\n\nIni adalah contoh editor **Markdown**.\n\n* Item 1\n* Item 2\n\nPersamaan linear: $y=mx+c$\n\nPersamaan kuadrat:\n$$\nx = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}\n$$") {
             const id = makeId();
             const card = createCardBase('Markdown', id);
             const bd = card.querySelector('.bd');
@@ -655,8 +654,8 @@
             textarea.value = code || '';
             editorsEl.appendChild(card);
         }
-        
-        function addMathLiveEditor(code="x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}"){
+
+        function addMathLiveEditor(code = "x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}") {
             const id = makeId();
             const card = createCardBase('MathLive', id);
             const bd = card.querySelector('.bd');
@@ -672,7 +671,7 @@
             editorsEl.appendChild(card);
         }
 
-        function addSageEditor(code="# Misal: hitung integral\nvar('x')\nintegrate(sin(x), x)"){
+        function addSageEditor(code = "# Misal: hitung integral\nvar('x')\nintegrate(sin(x), x)") {
             const id = makeId();
             const card = createCardBase('SageMath', id);
             const bd = card.querySelector('.bd');
@@ -689,18 +688,18 @@
             editorsEl.appendChild(card);
         }
 
-        editorsEl.addEventListener('click', async (e)=>{
+        editorsEl.addEventListener('click', async (e) => {
             const btn = e.target.closest('button');
-            if(!btn) return;
+            if (!btn) return;
             const card = e.target.closest('.card');
-            if(!card) return;
+            if (!card) return;
             const id = card.dataset.id;
             const type = card.dataset.type;
             const action = btn.dataset.action;
             const outEl = card.querySelector('.out');
 
-            if(action === 'delete'){
-                if(confirm('Apakah Anda yakin ingin menghapus editor ini?')){
+            if (action === 'delete') {
+                if (confirm('Apakah Anda yakin ingin menghapus editor ini?')) {
                     card.remove();
                 }
                 return;
@@ -719,59 +718,30 @@
                 return;
             }
 
-            if(action === 'clear-out'){
-                if(outEl){ 
+            if (action === 'clear-out') {
+                if (outEl) {
                     outEl.innerHTML = '';
-                    outEl.classList.remove('ok', 'err'); 
-                    if (type === 'SageMath') {
-                        const sageTarget = card.querySelector('#sage-target-' + id);
-                        if (sageTarget) sageTarget.innerHTML = '';
-                    }
+                    outEl.classList.remove('ok', 'err');
                 }
+                if (type === 'SageMath') {
+                    const sageTarget = card.querySelector('#sage-target-' + id);
+                    if (sageTarget) sageTarget.innerHTML = '';
+                }
+                const previewDiv = card.querySelector('.markdown-preview');
+                if (previewDiv) previewDiv.innerHTML = '';
                 return;
             }
 
-            if(action === 'toggle-markdown' && type === 'Markdown'){
+            if (action === 'toggle-markdown' && type === 'Markdown') {
                 const textarea = card.querySelector('textarea.code');
                 const previewDiv = card.querySelector('.markdown-preview');
-                
                 if (previewDiv.classList.contains('visible')) {
                     previewDiv.classList.remove('visible');
                     textarea.style.display = 'block';
                     btn.textContent = 'Lihat Preview';
                 } else {
                     const markdownText = textarea.value;
-                    const html = marked.parse(markdownText);
-                    previewDiv.innerHTML = html;
-                    
-                    const inlineSpans = previewDiv.querySelectorAll('span.latex-inline');
-                    inlineSpans.forEach(span => {
-                        span.outerHTML = `\\(${span.textContent}\\)`;
-                    });
-
-                    const codeBlocks = previewDiv.querySelectorAll('pre > code');
-                    codeBlocks.forEach(code => {
-                        const lang = code.getAttribute('class');
-                        if (lang && (lang.includes('language-latex') || lang.includes('language-tex'))) {
-                            const content = code.textContent;
-                            const newDiv = document.createElement('div');
-                            newDiv.innerHTML = '$$' + content + '$$';
-                            code.parentNode.replaceWith(newDiv);
-                        }
-                    });
-
-                    MathJax.typesetPromise([previewDiv]).then(() => {
-                        const sageScripts = previewDiv.querySelectorAll('script[type="text/sage"]');
-                        sageScripts.forEach(script => {
-                            sagecell.makeSagecell({
-                                inputLocation: script.parentNode,
-                                template: sagecell.templates.minimal,
-                                evalButtonText: 'Jalankan Sage',
-                                code: script.textContent
-                            });
-                        });
-                    });
-
+                    previewDiv.innerHTML = renderMarkdownAndMath(markdownText);
                     previewDiv.classList.add('visible');
                     textarea.style.display = 'none';
                     btn.textContent = 'Lihat Kode';
@@ -779,133 +749,263 @@
                 return;
             }
 
-            if(action === 'run-sage' && type === 'SageMath'){
+            if (action === 'run-sage' && type === 'SageMath') {
                 const code = card.querySelector('textarea.code').value;
                 const target = card.querySelector('#sage-target-' + id);
                 if (!target) return;
-
                 target.innerHTML = '';
                 const sageInput = document.createElement('div');
                 sageInput.classList.add('sage-input');
                 target.appendChild(sageInput);
-                
-                const cell = sagecell.makeSagecell({
-                    inputLocation: sageInput,
-                    template: sagecell.templates.minimal,
-                    evalButtonText: 'Jalankan',
-                    code: code
-                });
-                
-                cell.input_div.style.height = 'auto';
-                cell.execute();
+                if (window.sagecell) {
+                    const cell = sagecell.makeSagecell({
+                        inputLocation: sageInput,
+                        template: sagecell.templates.minimal,
+                        evalButtonText: 'Jalankan',
+                        code: code
+                    });
+                    cell.input_div.style.height = 'auto';
+                    cell.execute();
+                }
                 return;
             }
         });
 
-        btnAddMarkdown.addEventListener('click', ()=> addMarkdownEditor());
-        btnAddMathLive.addEventListener('click', ()=> addMathLiveEditor());
-        btnAddSage.addEventListener('click', ()=> addSageEditor());
+        btnAddMarkdown.addEventListener('click', () => addMarkdownEditor());
+        btnAddMathLive.addEventListener('click', () => addMathLiveEditor());
+        btnAddSage.addEventListener('click', () => addSageEditor());
 
-        btnSaveAll.addEventListener('click', ()=>{
+        btnSaveAll.addEventListener('click', () => {
             const data = [];
-            document.querySelectorAll('.card').forEach(card=>{
+            document.querySelectorAll('.card').forEach(card => {
                 const type = card.dataset.type;
                 let code = '';
-                if(type === 'MathLive'){
+                if (type === 'MathLive') {
                     const mathField = card.querySelector('math-field');
-                    if(mathField) code = mathField.value;
+                    if (mathField) code = mathField.value;
                 } else {
                     const codeEl = card.querySelector('textarea.code');
-                    if(codeEl) code = codeEl.value;
+                    if (codeEl) code = codeEl.value;
                 }
                 data.push({ type, code });
             });
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = 'multi_editors.json'; a.click();
             URL.revokeObjectURL(url);
         });
 
-        btnImport.addEventListener('click', ()=> importInput.click());
-        importInput.addEventListener('change', (ev)=>{
+        btnImport.addEventListener('click', () => importInput.click());
+        importInput.addEventListener('change', (ev) => {
             const file = ev.target.files[0];
-            if(!file) return;
+            if (!file) return;
             const rd = new FileReader();
-            rd.onload = e=>{
-                try{
+            rd.onload = e => {
+                try {
                     const arr = JSON.parse(e.target.result);
                     editorsEl.innerHTML = '';
                     nextId = 1;
-                    for(const item of arr){
-                        if(item.type === 'Markdown') addMarkdownEditor(item.code||'');
-                        else if(item.type === 'MathLive') addMathLiveEditor(item.code||'');
-                        else if(item.type === 'SageMath') addSageEditor(item.code||'');
+                    for (const item of arr) {
+                        if (item.type === 'Markdown') addMarkdownEditor(item.code || '');
+                        else if (item.type === 'MathLive') addMathLiveEditor(item.code || '');
+                        else if (item.type === 'SageMath') addSageEditor(item.code || '');
                     }
-                } catch(err){
-                    alert("Gagal memuat file. Pastikan formatnya benar.");
-                    console.error('Error importing file: ', err);
+                } catch (err) {
+                    alert('Gagal mengimpor: ' + err);
                 }
             };
             rd.readAsText(file);
+            ev.target.value = '';
         });
 
-        btnClearAll.addEventListener('click', ()=>{
-            if(confirm('Apakah Anda yakin ingin menghapus semua editor? Tindakan ini tidak dapat dibatalkan.')){
-                editorsEl.innerHTML = '';
-                nextId = 1;
-            }
+        btnClearAll.addEventListener('click', () => {
+            if (confirm('Hapus semua editor? Tindakan ini tidak dapat dibatalkan.')) editorsEl.innerHTML = '';
         });
 
-        btnShowGuide.addEventListener('click', ()=>{
-            guideModal.style.display = 'flex';
+        btnShowGuide.addEventListener('click', () => { guideModal.style.display = 'flex'; });
+        closeBtnGuide.addEventListener('click', () => { guideModal.style.display = 'none'; });
+        btnShowAIAssist.addEventListener('click', () => { aiModal.style.display = 'flex'; });
+        closeBtnAI.addEventListener('click', () => { aiModal.style.display = 'none'; });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === guideModal) guideModal.style.display = 'none';
+            if (event.target === aiModal) aiModal.style.display = 'none';
         });
-
-        closeBtnGuide.addEventListener('click', ()=>{
-            guideModal.style.display = 'none';
-        });
-
-        btnShowAIAssist.addEventListener('click', ()=>{
-            aiModal.style.display = 'flex';
-        });
-
-        closeBtnAI.addEventListener('click', ()=>{
-            aiModal.style.display = 'none';
-        });
-
-        // Event listener untuk tombol "Colab"
-        openColabBtn.addEventListener('click', () => {
-            window.open('https://colab.research.google.com/', '_blank');
-        });
-
-        window.addEventListener('click', (event)=>{
-            if (event.target == guideModal) {
-                guideModal.style.display = "none";
-            }
-            if (event.target == aiModal) {
-                aiModal.style.display = "none";
-            }
-        });
-
-        // Dark Mode Toggle Logic
-        const applyDarkMode = (isDark) => {
-            document.body.classList.toggle('dark-mode', isDark);
-            localStorage.setItem('darkMode', isDark);
-        };
-
-        const currentMode = localStorage.getItem('darkMode') === 'true';
-        applyDarkMode(currentMode);
 
         darkModeToggle.addEventListener('click', () => {
-            const isDark = !document.body.classList.contains('dark-mode');
-            applyDarkMode(isDark);
-        });
-        
-        // Load initial editors
-        document.addEventListener('DOMContentLoaded', () => {
-            addMarkdownEditor();
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            darkModeToggle.textContent = isDarkMode ? '☀️ Mode Terang' : '🌙 Mode Gelap';
         });
 
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.textContent = '☀️ Mode Terang';
+        }
+
+        // ===================== INTEGRASI FIREBASE (LIKE COUNTER) =====================
+        // === GANTI DENGAN KONFIGURASI FIREBASE ANDA ===
+        const firebaseConfig = {
+    apiKey: "AIzaSyB1SQF1GnLy45Eu7CIYmMJnnQsuHkia-ts",
+    authDomain: "multi-editor-labs.firebaseapp.com",
+    projectId: "multi-editor-labs",
+    storageBucket: "multi-editor-labs.firebasestorage.app",
+    messagingSenderId: "773652810417",
+    appId: "1:773652810417:web:ec88f1b0f9a7da5d58f090",
+    measurementId: "G-4K0RLZDJJH"   // Boleh tetap disertakan, tidak mengganggu
+};
+
+        let db;
+        let likesDocRef;
+        let likeButton = document.getElementById('likeButton');
+        let likeCountSpan = document.getElementById('likeCount');
+        let isUpdatingLike = false;
+
+        try {
+            if (firebase.apps.length === 0 && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                likesDocRef = db.collection('likes').doc('aiAssistant');
+                // Inisialisasi jika belum ada
+                likesDocRef.get().then(doc => {
+                    if (!doc.exists) {
+                        likesDocRef.set({ count: 0 });
+                    }
+                }).catch(err => console.warn("Firestore init:", err));
+
+                // Fungsi ambil jumlah like
+                async function fetchLikeCount() {
+                    try {
+                        const doc = await likesDocRef.get();
+                        if (doc.exists) {
+                            const count = doc.data().count || 0;
+                            likeCountSpan.textContent = count;
+                        } else {
+                            likeCountSpan.textContent = '0';
+                        }
+                    } catch (err) {
+                        console.error("Gagal mengambil like:", err);
+                        likeCountSpan.textContent = '?';
+                    }
+                }
+
+                // Fungsi update like (increment)
+                async function incrementLike() {
+                    if (isUpdatingLike) return;
+                    isUpdatingLike = true;
+                    likeButton.disabled = true;
+                    try {
+                        await likesDocRef.update({
+                            count: firebase.firestore.FieldValue.increment(1)
+                        });
+                        await fetchLikeCount(); // refresh UI
+                    } catch (err) {
+                        console.error("Gagal menambah like:", err);
+                        alert("Gagal menyimpan like. Periksa koneksi atau izin Firebase.");
+                    } finally {
+                        likeButton.disabled = false;
+                        isUpdatingLike = false;
+                    }
+                }
+
+                likeButton.addEventListener('click', incrementLike);
+                fetchLikeCount();
+
+                // Optional: realtime update jika ada perubahan dari pengguna lain
+                likesDocRef.onSnapshot((doc) => {
+                    if (doc.exists) {
+                        likeCountSpan.textContent = doc.data().count || 0;
+                    }
+                }, (err) => console.warn("Snapshot error:", err));
+
+            } else if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+                console.warn("Firebase: Silakan ganti konfigurasi firebaseConfig dengan data project Anda.");
+                likeButton.disabled = true;
+                likeCountSpan.textContent = "🔧 setup";
+            } else {
+                // Firebase sudah terinisialisasi sebelumnya oleh kode lain (tidak mungkin, tapi aman)
+                console.log("Firebase sudah aktif.");
+            }
+        } catch (e) {
+            console.error("Firebase error:", e);
+            likeButton.disabled = true;
+            likeCountSpan.textContent = "⚠️";
+        }
+
+        // ===================== INTEGRASI GEMINI AI =====================
+        const GEMINI_API_KEY = "AQ.Ab8RN6JrZEi3hyot8wzWkXAvAA13Wd_uq07QlINQcOP8ZSa7ww";
+        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
+        const btnAskGemini = document.getElementById('btn-ask-gemini');
+        const btnClearAI = document.getElementById('btn-clear-ai');
+        const btnCopyAI = document.getElementById('btn-copy-ai');
+        const aiPrompt = document.getElementById('ai-prompt');
+        const aiOutput = document.getElementById('ai-output');
+        const aiLoading = document.getElementById('ai-loading');
+
+        let rawAiMarkdown = "";
+
+        btnAskGemini.addEventListener('click', async () => {
+            const promptText = aiPrompt.value.trim();
+            if (!promptText) {
+                alert("Mohon masukkan pertanyaan atau perintah terlebih dahulu.");
+                return;
+            }
+
+            aiLoading.style.display = 'block';
+            btnAskGemini.disabled = true;
+            aiOutput.innerHTML = "Sedang berpikir...";
+            rawAiMarkdown = "";
+
+            const sistemPrompt = `Anda adalah asisten laboratorium matematika profesional. 
+Tugas Anda adalah membantu menjawab pertanyaan pengguna dengan struktur yang baik.
+Jika memberikan formula matematika, wajib menggunakan penulisan LaTeX standar berikut:
+- Gunakan $...$ untuk inline math (contoh: $f(x) = x^2$)
+- Gunakan $$...$$ untuk display math standalone (jangan gunakan \\[ \\]).
+Berikan penjelasan yang runut, tajam, dan edukatif. 
+
+Pertanyaan Pengguna: ${promptText}`;
+
+            try {
+                const response = await fetch(GEMINI_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: sistemPrompt }] }]
+                    })
+                });
+
+                if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
+                const data = await response.json();
+                const rawMarkdown = data.candidates[0].content.parts[0].text;
+                rawAiMarkdown = rawMarkdown;
+                aiOutput.innerHTML = renderMarkdownAndMath(rawMarkdown);
+            } catch (error) {
+                console.error("Kesalahan API Gemini:", error);
+                aiOutput.innerHTML = `<span style="color:var(--danger)">Gagal memproses data. Pastikan API Key Anda valid. Error: ${error.message}</span>`;
+            } finally {
+                aiLoading.style.display = 'none';
+                btnAskGemini.disabled = false;
+            }
+        });
+
+        btnCopyAI.addEventListener('click', () => {
+            if (!rawAiMarkdown) {
+                alert("Belum ada jawaban valid dari AI yang bisa disalin.");
+                return;
+            }
+            copyToClipboard(rawAiMarkdown);
+        });
+
+        btnClearAI.addEventListener('click', () => {
+            aiPrompt.value = '';
+            aiOutput.innerHTML = 'Silakan ketik pertanyaan atau draf instruksi di atas, lalu klik tombol untuk mendapatkan bantuan jawaban cerdas.';
+            rawAiMarkdown = '';
+        });
+
+        addMarkdownEditor();
     </script>
 </body>
 </html>
