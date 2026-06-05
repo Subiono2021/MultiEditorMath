@@ -846,16 +846,15 @@
         }
 
         // ===================== INTEGRASI FIREBASE (LIKE COUNTER) =====================
-        // === GANTI DENGAN KONFIGURASI FIREBASE ANDA ===
         const firebaseConfig = {
-    apiKey: "AIzaSyB1SQF1GnLy45Eu7CIYmMJnnQsuHkia-ts",
-    authDomain: "multi-editor-labs.firebaseapp.com",
-    projectId: "multi-editor-labs",
-    storageBucket: "multi-editor-labs.firebasestorage.app",
-    messagingSenderId: "773652810417",
-    appId: "1:773652810417:web:ec88f1b0f9a7da5d58f090",
-    measurementId: "G-4K0RLZDJJH"   // Boleh tetap disertakan, tidak mengganggu
-};
+            apiKey: "AIzaSyB1SQF1GnLy45Eu7CIYmMJnnQsuHkia-ts",
+            authDomain: "multi-editor-labs.firebaseapp.com",
+            projectId: "multi-editor-labs",
+            storageBucket: "multi-editor-labs.firebasestorage.app",
+            messagingSenderId: "773652810417",
+            appId: "1:773652810417:web:ec88f1b0f9a7da5d58f090",
+            measurementId: "G-4K0RLZDJJH"
+        };
 
         let db;
         let likesDocRef;
@@ -925,7 +924,6 @@
                 likeButton.disabled = true;
                 likeCountSpan.textContent = "🔧 setup";
             } else {
-                // Firebase sudah terinisialisasi sebelumnya oleh kode lain (tidak mungkin, tapi aman)
                 console.log("Firebase sudah aktif.");
             }
         } catch (e) {
@@ -935,8 +933,8 @@
         }
 
         // ===================== INTEGRASI GEMINI AI =====================
-        const GEMINI_API_KEY = "AQ.Ab8RN6JrZEi3hyot8wzWkXAvAA13Wd_uq07QlINQcOP8ZSa7ww";
-        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+        // Gunakan proxy Cloudflare Worker (API Key disimpan di Worker, aman)
+        const PROXY_URL = "https://gemini-proxy.sub1104ono.workers.dev";
 
         const btnAskGemini = document.getElementById('btn-ask-gemini');
         const btnClearAI = document.getElementById('btn-clear-ai');
@@ -969,7 +967,8 @@ Berikan penjelasan yang runut, tajam, dan edukatif.
 Pertanyaan Pengguna: ${promptText}`;
 
             try {
-                const response = await fetch(GEMINI_URL, {
+                // Panggil Worker proxy (bukan langsung Gemini API)
+                const response = await fetch(PROXY_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -984,7 +983,7 @@ Pertanyaan Pengguna: ${promptText}`;
                 aiOutput.innerHTML = renderMarkdownAndMath(rawMarkdown);
             } catch (error) {
                 console.error("Kesalahan API Gemini:", error);
-                aiOutput.innerHTML = `<span style="color:var(--danger)">Gagal memproses data. Pastikan API Key Anda valid. Error: ${error.message}</span>`;
+                aiOutput.innerHTML = `<span style="color:var(--danger)">Gagal memproses data. Error: ${error.message}</span>`;
             } finally {
                 aiLoading.style.display = 'none';
                 btnAskGemini.disabled = false;
