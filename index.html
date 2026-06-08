@@ -577,11 +577,23 @@
                 <label for="ai-prompt" style="font-weight: bold; display: block; margin-bottom: 8px;">Tanyakan sesuatu tentang Matematika, LaTeX, atau SageMath:</label>
                 <textarea id="ai-prompt" class="code" style="height: 100px; margin-bottom: 10px;" placeholder="Contoh: Buatkan kode SageMath untuk menghitung nilai eigen matriks 3x3 pembawa nilai..."></textarea>
                 
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
                     <button id="btn-ask-gemini">✨ Tanyakan BiMath-AI</button>
                     <button id="btn-copy-ai" class="secondary">📋 Salin Jawaban</button>
                     <button id="btn-clear-ai" class="danger">🧹 Bersihkan Konten</button>
                 </div>
+                
+                <!-- Opsi fallback API key langsung (opsional) -->
+                <details style="margin-bottom: 12px;">
+                    <summary style="cursor: pointer; color: var(--brand);">🔧 Jika proxy error 500, gunakan API Key sendiri (fallback)</summary>
+                    <div style="margin-top: 8px;">
+                        <input type="text" id="manualApiKey" placeholder="Masukkan Google Gemini API Key" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--ink);">
+                        <div class="note" style="margin-top: 4px;">⚠️ API Key akan tersimpan di browser Anda (tidak aman untuk publik, gunakan hanya untuk pribadi). Dapatkan dari <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>.</div>
+                        <button id="saveApiKeyBtn" class="secondary" style="margin-top: 6px;">💾 Simpan API Key</button>
+                        <button id="clearApiKeyBtn" class="ghost" style="margin-top: 6px;">🗑 Hapus API Key</button>
+                    </div>
+                </details>
+                
                 <p id="ai-loading" style="display: none; color: var(--brand); font-weight: bold; margin-top: 8px;">🔄 Sedang memproses penalaran AI...</p>
             </div>
 
@@ -966,41 +978,82 @@
             likeCountSpan.textContent = "⚠️";
         }
 
-        // ===================== INTEGRASI GEMINI AI (DENGAN RATE LIMITING & HANDLING 429) =====================
+        // ===================== INTEGRASI GEMINI AI (dengan fallback API key) =====================
         const PROXY_URL = "https://gemini-proxy.sub1104ono.workers.dev";
-
         const btnAskGemini = document.getElementById('btn-ask-gemini');
         const btnClearAI = document.getElementById('btn-clear-ai');
         const btnCopyAI = document.getElementById('btn-copy-ai');
         const aiPrompt = document.getElementById('ai-prompt');
         const aiOutput = document.getElementById('ai-output');
         const aiLoading = document.getElementById('ai-loading');
+        const manualApiKeyInput = document.getElementById('manualApiKey');
+        const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+        const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
 
         let rawAiMarkdown = "";
-        
-        // --- Rate limiting client-side ---
         let lastRequestTime = 0;
-        const COOLDOWN_MS = 15000; // 15 detik antar permintaan
+        const COOLDOWN_MS = 15000;
         let isRequesting = false;
+        
+        // Simpan API key di localStorage jika pengguna memasukkannya
+        let userApiKey = localStorage.getItem('gemini_api_key') || '';
+        if (userApiKey) manualApiKeyInput.value = userApiKey;
+
+        saveApiKeyBtn.addEventListener('click', () => {
+            const newKey = manualApiKeyInput.value.trim();
+            if (newKey) {
+                localStorage.setItem('gemini_api_key', newKey);
+                userApiKey = newKey;
+                alert("API Key disimpan secara lokal. Sekarang Anda dapat menggunakan fallback langsung ke Gemini API.");
+            } else {
+                alert("Masukkan API Key yang valid.");
+            }
+        });
+        
+        clearApiKeyBtn.addEventListener('click', () => {
+            localStorage.removeItem('gemini_api_key');
+            userApiKey = '';
+            manualApiKeyInput.value = '';
+            alert("API Key lokal telah dihapus.");
+        });
+
+        // Fungsi untuk memanggil Gemini langsung (fallback)
+        async function callGeminiDirectly(prompt, apiKey) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+            if (!response.ok) {
+                if (response.status === 429) throw new Error("429 - Rate limit API key sendiri");
+                if (response.status === 403 || response.status === 401) throw new Error("API Key tidak valid atau tidak memiliki akses");
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const data = await response.json();
+            if (!data.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error("Respons tidak memiliki teks");
+            return data.candidates[0].content.parts[0].text;
+        }
 
         btnAskGemini.addEventListener('click', async () => {
-            // Cek cooldown
             const now = Date.now();
             const timeSinceLast = now - lastRequestTime;
             if (timeSinceLast < COOLDOWN_MS && lastRequestTime !== 0) {
                 const waitSeconds = Math.ceil((COOLDOWN_MS - timeSinceLast) / 1000);
-                aiOutput.innerHTML = `<span style="color:var(--danger)">⏳ Harap tunggu ${waitSeconds} detik sebelum mengirim permintaan baru (rate limit).</span>`;
+                aiOutput.innerHTML = `<span style="color:var(--danger)">⏳ Harap tunggu ${waitSeconds} detik sebelum mengirim permintaan baru.</span>`;
                 return;
             }
             
             const promptText = aiPrompt.value.trim();
             if (!promptText) {
-                alert("Mohon masukkan pertanyaan atau perintah terlebih dahulu.");
+                alert("Mohon masukkan pertanyaan terlebih dahulu.");
                 return;
             }
             
             if (isRequesting) {
-                aiOutput.innerHTML = `<span style="color:var(--brand)">⏳ Masih memproses permintaan sebelumnya, harap bersabar...</span>`;
+                aiOutput.innerHTML = `<span style="color:var(--brand)">⏳ Masih memproses permintaan sebelumnya...</span>`;
                 return;
             }
             
@@ -1011,71 +1064,84 @@
             rawAiMarkdown = "";
 
             const sistemPrompt = `Anda adalah asisten laboratorium matematika profesional. 
-Tugas Anda adalah membantu menjawab pertanyaan pengguna dengan struktur yang baik.
-Jika memberikan formula matematika, wajib menggunakan penulisan LaTeX standar berikut:
-- Gunakan $...$ untuk inline math (contoh: $f(x) = x^2$)
-- Gunakan $$...$$ untuk display math standalone (jangan gunakan \\[ \\]).
-Berikan penjelasan yang runut, tajam, dan edukatif. 
+Gunakan $...$ untuk inline math dan $$...$$ untuk display math. 
+Jawab pertanyaan berikut dengan penjelasan runut dan edukatif.
 
-Pertanyaan Pengguna: ${promptText}`;
+Pertanyaan: ${promptText}`;
 
             try {
-                const response = await fetch(PROXY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: sistemPrompt }] }]
-                    })
-                });
-
-                // Tangani status HTTP 429 secara spesifik
-                if (response.status === 429) {
-                    // Perpanjang cooldown karena rate limit dari server
-                    lastRequestTime = Date.now() - COOLDOWN_MS + 30000; // paksa cooldown 30 detik ke depan
-                    throw new Error(`HTTP Error! Status: 429 (Too Many Requests) - Server melaporkan batas permintaan tercapai. Coba lagi setelah 30 detik.`);
+                let responseText = "";
+                let usedProxy = true;
+                
+                // Coba pakai proxy dulu
+                try {
+                    const proxyResponse = await fetch(PROXY_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: sistemPrompt }] }] })
+                    });
+                    
+                    if (proxyResponse.status === 200) {
+                        const data = await proxyResponse.json();
+                        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            responseText = data.candidates[0].content.parts[0].text;
+                            usedProxy = true;
+                        } else {
+                            throw new Error("Respons proxy tidak valid");
+                        }
+                    } else if (proxyResponse.status === 429) {
+                        throw new Error("429 - Rate limit dari proxy");
+                    } else if (proxyResponse.status === 500) {
+                        throw new Error("500 - Proxy internal server error");
+                    } else {
+                        throw new Error(`HTTP ${proxyResponse.status} dari proxy`);
+                    }
+                } catch (proxyErr) {
+                    console.warn("Proxy gagal:", proxyErr.message);
+                    // Fallback ke API key langsung jika tersedia
+                    if (userApiKey) {
+                        aiOutput.innerHTML = "⚠️ Proxy sedang bermasalah (500). Mencoba menggunakan API Key Anda...";
+                        try {
+                            responseText = await callGeminiDirectly(sistemPrompt, userApiKey);
+                            usedProxy = false;
+                            aiOutput.innerHTML = "✅ Berhasil menggunakan API Key pribadi.";
+                        } catch (directErr) {
+                            throw new Error(`Proxy error (${proxyErr.message}) dan API key gagal: ${directErr.message}`);
+                        }
+                    } else {
+                        throw new Error(`Proxy error: ${proxyErr.message}. Silakan masukkan API Key sendiri di opsi fallback.`);
+                    }
                 }
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP Error! Status: ${response.status}`);
+                rawAiMarkdown = responseText;
+                aiOutput.innerHTML = renderMarkdownAndMath(responseText);
+                if (!usedProxy) {
+                    aiOutput.innerHTML += '<div class="note" style="margin-top: 8px;">✨ Dijawab menggunakan API Key pribadi Anda.</div>';
                 }
-                
-                const data = await response.json();
-                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts) {
-                    throw new Error("Respons API tidak memiliki struktur yang diharapkan.");
-                }
-                const rawMarkdown = data.candidates[0].content.parts[0].text;
-                rawAiMarkdown = rawMarkdown;
-                aiOutput.innerHTML = renderMarkdownAndMath(rawMarkdown);
-                
-                // Update waktu permintaan terakhir hanya jika sukses
                 lastRequestTime = Date.now();
                 
             } catch (error) {
-                console.error("Kesalahan API Gemini:", error);
-                let errorMsg = error.message;
-                if (errorMsg.includes('429')) {
-                    errorMsg = "⚠️ Terlalu banyak permintaan ke server AI. Mohon tunggu 30 detik sebelum mencoba lagi.";
-                } else if (errorMsg.includes('fetch')) {
-                    errorMsg = "🌐 Gagal terhubung ke layanan AI. Periksa koneksi internet Anda.";
+                console.error("Kesalahan AI:", error);
+                let userMessage = error.message;
+                if (userMessage.includes('429')) {
+                    userMessage = "Terlalu banyak permintaan. Tunggu 30 detik.";
+                    lastRequestTime = Date.now() - COOLDOWN_MS + 30000;
+                } else if (userMessage.includes('500')) {
+                    userMessage = "Layanan proxy AI sedang mengalami gangguan (Error 500). Gunakan opsi 'API Key sendiri' di bawah atau coba lagi nanti.";
+                } else if (userMessage.includes('fetch')) {
+                    userMessage = "Gagal terhubung ke layanan AI. Periksa koneksi internet.";
                 }
-                aiOutput.innerHTML = `<span style="color:var(--danger)">Gagal memproses data. ${errorMsg}</span>`;
-                // Jangan update lastRequestTime agar pengguna bisa coba lagi nanti, tetapi cooldown tetap berjalan dari error 429
-                if (!errorMsg.includes('429')) {
-                    // Untuk error lain, tetap beri cooldown 5 detik agar tidak spam
-                    lastRequestTime = Date.now() - COOLDOWN_MS + 5000;
-                }
+                aiOutput.innerHTML = `<span style="color:var(--danger)">❌ Gagal: ${userMessage}</span>`;
             } finally {
                 aiLoading.style.display = 'none';
                 btnAskGemini.disabled = false;
                 isRequesting = false;
-                // Setelah selesai, pastikan tombol tidak langsung bisa diklik jika cooldown masih aktif
-                // (cooldown akan dicek di awal event berikutnya)
             }
         });
 
         btnCopyAI.addEventListener('click', () => {
             if (!rawAiMarkdown) {
-                alert("Belum ada jawaban valid dari AI yang bisa disalin.");
+                alert("Belum ada jawaban yang bisa disalin.");
                 return;
             }
             copyToClipboard(rawAiMarkdown);
