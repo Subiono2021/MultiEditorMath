@@ -505,7 +505,40 @@
                 </li>
 				<li><b>🤖 Bantuan AI:</b> Disini anda bisa beriteraksi dengan <b>Gemini-AI</b>. Silahkan anda bertanya apa saja tentang matematika atau yang lainnya. Tentunya anda harus jaga <a href="https://subiono2021.github.io/BiMath_AI/" target="_blank" style="color:#ffffff;"><b>ETIKA-AI</b></a> dalam bertanya! Bila anda suka, silahkan tekan ❤️.</li>
             </ul>
+            <hr>
+             <h3>🔧 Mengatasi Error 503 / Gangguan Proxy pada Bantuan AI</h3>
+            <p align="justify">
+              Terkadang layanan <i>proxy</i> publik yang menghubungkan aplikasi dengan AI dapat mengalami gangguan (error 503, 500, atau timeout). 
+              Jangan khawatir, Anda dapat dengan mudah menggunakan <b>API Key pribadi</b> dari Google secara gratis untuk tetap mengakses fitur AI. 
+              Ikuti panduan singkat berikut:
+            </p>
 
+            <h4>📋 Langkah Mendapatkan API Key Gemini (Gratis)</h4>
+            <ol align="justify">
+                <li>Buka situs <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a> (aistudio.google.com).</li>
+                <li>Klik <b>"Sign in"</b> dan masuk dengan akun Google Anda. Jika belum punya, buat akun gratis terlebih dahulu.</li>
+                <li>Setelah masuk, cari menu <b>"Get API key"</b> di sisi kiri layar.</li>
+                <li>Klik tombol <b>"Create API key"</b> (di pojok kanan atas).</li>
+                <li>Pilih <b>"Create a new project"</b> (beri nama bebas, misal "Proyek AI Saya") atau pilih proyek yang sudah ada.</li>
+                <li><b>Salin kode API Key</b> yang muncul (biasanya diawali dengan <code>AIza...</code>). <u>Simpan di tempat aman</u> karena tidak bisa dilihat lagi setelah halaman ditutup.</li>
+            </ol>
+            <p align="justify">
+              <strong>Catatan:</strong> Paket gratis Google memberikan kuota yang cukup untuk penggunaan pribadi (50–500 permintaan per hari). 
+              Tidak perlu kartu kredit, dan prosesnya hanya memakan waktu 2-3 menit.
+            </p>
+
+            <h4>🔑 Cara Menggunakan API Key di Aplikasi</h4>
+            <ol align="justify">
+                <li>Buka jendela <b>"🤖 Bantuan AI"</b> pada aplikasi ini.</li>
+                <li>Di bagian bawah, klik untuk membuka <b>"🔧 Jika proxy error 500, gunakan API Key sendiri (fallback)"</b>.</li>
+                <li><b>Tempelkan</b> API Key yang sudah Anda salin ke dalam kolom yang tersedia.</li>
+                <li>Klik <b>"💾 Simpan API Key"</b>. Kunci akan tersimpan di browser Anda.</li>
+                <li>Sekarang fitur Bantuan AI akan langsung menggunakan API Key pribadi dan tidak terganggu oleh error proxy.</li>
+            </ol>
+            <p align="justify">
+              <strong>Peringatan Keamanan:</strong> API Key bersifat rahasia seperti kata sandi. Jangan membagikannya kepada orang lain. 
+              Aplikasi ini menyimpannya secara lokal di browser Anda, tidak dikirim ke server manapun.
+            </p>
             <hr>
             
             <h3>Fungsionalitas Tambahan</h3>
@@ -978,7 +1011,7 @@
             likeCountSpan.textContent = "⚠️";
         }
 
-        // ===================== INTEGRASI GEMINI AI (dengan fallback API key) =====================
+        // ===================== INTEGRASI GEMINI AI (dengan fallback API key + ROBUST FETCH) =====================
         const PROXY_URL = "https://gemini-proxy.sub1104ono.workers.dev";
         const btnAskGemini = document.getElementById('btn-ask-gemini');
         const btnClearAI = document.getElementById('btn-clear-ai');
@@ -1016,6 +1049,51 @@
             manualApiKeyInput.value = '';
             alert("API Key lokal telah dihapus.");
         });
+
+        // ========== FUNGSI FETCH DENGAN TIMEOUT DAN RETRY (ROBUST) ==========
+        async function fetchWithTimeout(url, options, timeoutMs = 15000) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    signal: controller.signal
+                });
+                clearTimeout(id);
+                return response;
+            } catch (err) {
+                clearTimeout(id);
+                if (err.name === 'AbortError') {
+                    throw new Error('TIMEOUT');
+                }
+                throw err;
+            }
+        }
+
+        async function fetchWithRetry(url, options, maxRetries = 2, delayMs = 1000) {
+            let lastError;
+            for (let i = 0; i <= maxRetries; i++) {
+                try {
+                    const response = await fetchWithTimeout(url, options, 15000);
+                    // Jika respons 5xx (termasuk 503), throw untuk memicu retry
+                    if (response.status >= 500 && response.status < 600) {
+                        throw new Error(`HTTP ${response.status} - Server error`);
+                    }
+                    return response;
+                } catch (err) {
+                    lastError = err;
+                    if (i < maxRetries && (err.message.includes('TIMEOUT') || err.message.includes('503') || err.message.includes('500') || err.message.includes('502') || err.message.includes('504'))) {
+                        console.warn(`Retry ${i+1}/${maxRetries} after ${delayMs}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delayMs));
+                        delayMs *= 2; // exponential backoff
+                        continue;
+                    }
+                    throw err;
+                }
+            }
+            throw lastError;
+        }
+        // ========== AKHIR FUNGSI ROBUST ==========
 
         // Fungsi untuk memanggil Gemini langsung (fallback)
         async function callGeminiDirectly(prompt, apiKey) {
@@ -1073,13 +1151,13 @@ Pertanyaan: ${promptText}`;
                 let responseText = "";
                 let usedProxy = true;
                 
-                // Coba pakai proxy dulu
+                // Coba pakai proxy dulu dengan mekanisme robust (timeout + retry)
                 try {
-                    const proxyResponse = await fetch(PROXY_URL, {
+                    const proxyResponse = await fetchWithRetry(PROXY_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text: sistemPrompt }] }] })
-                    });
+                    }, 2, 1000);
                     
                     if (proxyResponse.status === 200) {
                         const data = await proxyResponse.json();
@@ -1091,16 +1169,14 @@ Pertanyaan: ${promptText}`;
                         }
                     } else if (proxyResponse.status === 429) {
                         throw new Error("429 - Rate limit dari proxy");
-                    } else if (proxyResponse.status === 500) {
-                        throw new Error("500 - Proxy internal server error");
                     } else {
                         throw new Error(`HTTP ${proxyResponse.status} dari proxy`);
                     }
                 } catch (proxyErr) {
-                    console.warn("Proxy gagal:", proxyErr.message);
+                    console.warn("Proxy gagal setelah retry:", proxyErr.message);
                     // Fallback ke API key langsung jika tersedia
                     if (userApiKey) {
-                        aiOutput.innerHTML = "⚠️ Proxy sedang bermasalah (500). Mencoba menggunakan API Key Anda...";
+                        aiOutput.innerHTML = "⚠️ Proxy sedang bermasalah. Mencoba menggunakan API Key Anda...";
                         try {
                             responseText = await callGeminiDirectly(sistemPrompt, userApiKey);
                             usedProxy = false;
@@ -1126,8 +1202,8 @@ Pertanyaan: ${promptText}`;
                 if (userMessage.includes('429')) {
                     userMessage = "Terlalu banyak permintaan. Tunggu 30 detik.";
                     lastRequestTime = Date.now() - COOLDOWN_MS + 30000;
-                } else if (userMessage.includes('500')) {
-                    userMessage = "Layanan proxy AI sedang mengalami gangguan (Error 500). Gunakan opsi 'API Key sendiri' di bawah atau coba lagi nanti.";
+                } else if (userMessage.includes('TIMEOUT')) {
+                    userMessage = "Koneksi ke proxy timeout. Gunakan opsi 'API Key sendiri' atau coba lagi nanti.";
                 } else if (userMessage.includes('fetch')) {
                     userMessage = "Gagal terhubung ke layanan AI. Periksa koneksi internet.";
                 }
