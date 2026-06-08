@@ -402,6 +402,44 @@
             justify-content: flex-end;
             margin-bottom: 10px;
         }
+		
+		/* ===== PERBAIKAN SPASI PARAGRAF ===== */
+#ai-output p {
+    margin-top: 0.2rem;
+    margin-bottom: 0.4rem;
+    line-height: 1;
+}
+
+#guideModal .modal-content p {
+    margin-top: 0.2rem;
+    margin-bottom: 0.4rem;
+    line-height: 1;
+}
+
+.markdown-preview p {
+    margin-top: 0.2rem;
+    margin-bottom: 0.4rem;
+    line-height: 1.5;
+}
+
+#ai-output ul, #ai-output ol,
+.markdown-preview ul, .markdown-preview ol,
+#guideModal .modal-content ul, #guideModal .modal-content ol {
+    margin-top: 0.2rem;
+    margin-bottom: 0.3rem;
+}
+#ai-output li,
+.markdown-preview li,
+#guideModal .modal-content li {
+    margin-bottom: 0.2rem;
+}
+
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+    margin-top: 0.7rem;
+    margin-bottom: 0.4rem;
+}
+		
+		
     </style>
 </head>
 <body>
@@ -867,14 +905,12 @@
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
                 likesDocRef = db.collection('likes').doc('aiAssistant');
-                // Inisialisasi jika belum ada
                 likesDocRef.get().then(doc => {
                     if (!doc.exists) {
                         likesDocRef.set({ count: 0 });
                     }
                 }).catch(err => console.warn("Firestore init:", err));
 
-                // Fungsi ambil jumlah like
                 async function fetchLikeCount() {
                     try {
                         const doc = await likesDocRef.get();
@@ -890,7 +926,6 @@
                     }
                 }
 
-                // Fungsi update like (increment)
                 async function incrementLike() {
                     if (isUpdatingLike) return;
                     isUpdatingLike = true;
@@ -899,7 +934,7 @@
                         await likesDocRef.update({
                             count: firebase.firestore.FieldValue.increment(1)
                         });
-                        await fetchLikeCount(); // refresh UI
+                        await fetchLikeCount();
                     } catch (err) {
                         console.error("Gagal menambah like:", err);
                         alert("Gagal menyimpan like. Periksa koneksi atau izin Firebase.");
@@ -912,7 +947,6 @@
                 likeButton.addEventListener('click', incrementLike);
                 fetchLikeCount();
 
-                // Optional: realtime update jika ada perubahan dari pengguna lain
                 likesDocRef.onSnapshot((doc) => {
                     if (doc.exists) {
                         likeCountSpan.textContent = doc.data().count || 0;
@@ -932,8 +966,7 @@
             likeCountSpan.textContent = "⚠️";
         }
 
-        // ===================== INTEGRASI GEMINI AI =====================
-        // Gunakan proxy Cloudflare Worker (API Key disimpan di Worker, aman)
+        // ===================== INTEGRASI GEMINI AI (DENGAN RATE LIMITING & HANDLING 429) =====================
         const PROXY_URL = "https://gemini-proxy.sub1104ono.workers.dev";
 
         const btnAskGemini = document.getElementById('btn-ask-gemini');
@@ -944,17 +977,37 @@
         const aiLoading = document.getElementById('ai-loading');
 
         let rawAiMarkdown = "";
+        
+        // --- Rate limiting client-side ---
+        let lastRequestTime = 0;
+        const COOLDOWN_MS = 15000; // 15 detik antar permintaan
+        let isRequesting = false;
 
         btnAskGemini.addEventListener('click', async () => {
+            // Cek cooldown
+            const now = Date.now();
+            const timeSinceLast = now - lastRequestTime;
+            if (timeSinceLast < COOLDOWN_MS && lastRequestTime !== 0) {
+                const waitSeconds = Math.ceil((COOLDOWN_MS - timeSinceLast) / 1000);
+                aiOutput.innerHTML = `<span style="color:var(--danger)">⏳ Harap tunggu ${waitSeconds} detik sebelum mengirim permintaan baru (rate limit).</span>`;
+                return;
+            }
+            
             const promptText = aiPrompt.value.trim();
             if (!promptText) {
                 alert("Mohon masukkan pertanyaan atau perintah terlebih dahulu.");
                 return;
             }
-
-            aiLoading.style.display = 'block';
+            
+            if (isRequesting) {
+                aiOutput.innerHTML = `<span style="color:var(--brand)">⏳ Masih memproses permintaan sebelumnya, harap bersabar...</span>`;
+                return;
+            }
+            
+            isRequesting = true;
             btnAskGemini.disabled = true;
-            aiOutput.innerHTML = "Sedang berpikir...";
+            aiLoading.style.display = 'block';
+            aiOutput.innerHTML = "🤔 Sedang memproses penalaran AI...";
             rawAiMarkdown = "";
 
             const sistemPrompt = `Anda adalah asisten laboratorium matematika profesional. 
@@ -967,7 +1020,6 @@ Berikan penjelasan yang runut, tajam, dan edukatif.
 Pertanyaan Pengguna: ${promptText}`;
 
             try {
-                // Panggil Worker proxy (bukan langsung Gemini API)
                 const response = await fetch(PROXY_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -976,17 +1028,48 @@ Pertanyaan Pengguna: ${promptText}`;
                     })
                 });
 
-                if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
+                // Tangani status HTTP 429 secara spesifik
+                if (response.status === 429) {
+                    // Perpanjang cooldown karena rate limit dari server
+                    lastRequestTime = Date.now() - COOLDOWN_MS + 30000; // paksa cooldown 30 detik ke depan
+                    throw new Error(`HTTP Error! Status: 429 (Too Many Requests) - Server melaporkan batas permintaan tercapai. Coba lagi setelah 30 detik.`);
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP Error! Status: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts) {
+                    throw new Error("Respons API tidak memiliki struktur yang diharapkan.");
+                }
                 const rawMarkdown = data.candidates[0].content.parts[0].text;
                 rawAiMarkdown = rawMarkdown;
                 aiOutput.innerHTML = renderMarkdownAndMath(rawMarkdown);
+                
+                // Update waktu permintaan terakhir hanya jika sukses
+                lastRequestTime = Date.now();
+                
             } catch (error) {
                 console.error("Kesalahan API Gemini:", error);
-                aiOutput.innerHTML = `<span style="color:var(--danger)">Gagal memproses data. Error: ${error.message}</span>`;
+                let errorMsg = error.message;
+                if (errorMsg.includes('429')) {
+                    errorMsg = "⚠️ Terlalu banyak permintaan ke server AI. Mohon tunggu 30 detik sebelum mencoba lagi.";
+                } else if (errorMsg.includes('fetch')) {
+                    errorMsg = "🌐 Gagal terhubung ke layanan AI. Periksa koneksi internet Anda.";
+                }
+                aiOutput.innerHTML = `<span style="color:var(--danger)">Gagal memproses data. ${errorMsg}</span>`;
+                // Jangan update lastRequestTime agar pengguna bisa coba lagi nanti, tetapi cooldown tetap berjalan dari error 429
+                if (!errorMsg.includes('429')) {
+                    // Untuk error lain, tetap beri cooldown 5 detik agar tidak spam
+                    lastRequestTime = Date.now() - COOLDOWN_MS + 5000;
+                }
             } finally {
                 aiLoading.style.display = 'none';
                 btnAskGemini.disabled = false;
+                isRequesting = false;
+                // Setelah selesai, pastikan tombol tidak langsung bisa diklik jika cooldown masih aktif
+                // (cooldown akan dicek di awal event berikutnya)
             }
         });
 
