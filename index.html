@@ -479,7 +479,7 @@
     <div id="guideModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            <h2>📚 <b>Panduan Multi Editor Versi 01</b></h2>
+            <h2>📚 <b>Panduan Multi Editor Versi 02</b></h2>
             <p style="text-align: right; font-size: 18px;">
               <b>
                   قَالُوا سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنتَ الْعَلِيمُ الْحَكِيمُ
@@ -506,11 +506,10 @@
 				<li><b>🤖 Bantuan AI:</b> Disini anda bisa beriteraksi dengan <b>Gemini-AI</b>. Silahkan anda bertanya apa saja tentang matematika atau yang lainnya. Tentunya anda harus jaga <a href="https://subiono2021.github.io/BiMath_AI/" target="_blank" style="color:#ffffff;"><b>ETIKA-AI</b></a> dalam bertanya! Bila anda suka, silahkan tekan ❤️.</li>
             </ul>
             <hr>
-             <h3>🔧 Mengatasi Error 503 / Gangguan Proxy pada Bantuan AI</h3>
+            <h3>🔑 Wajib: Masukkan API Key Gemini Sendiri</h3>
             <p align="justify">
-              Terkadang layanan <i>proxy</i> publik yang menghubungkan aplikasi dengan AI dapat mengalami gangguan (error 503, 500, atau timeout). 
-              Jangan khawatir, Anda dapat dengan mudah menggunakan <b>API Key pribadi</b> dari Google secara gratis untuk tetap mengakses fitur AI. 
-              Ikuti panduan singkat berikut:
+              Untuk menggunakan fitur <b>🤖 Bantuan AI</b>, Anda <strong>harus memiliki dan memasukkan API Key pribadi</strong> dari Google Gemini. 
+              Fitur ini tidak lagi menggunakan proxy publik yang sering error timeout. Berikut cara mendapatkannya secara gratis:
             </p>
 
             <h4>📋 Langkah Mendapatkan API Key Gemini (Gratis)</h4>
@@ -527,13 +526,12 @@
               Tidak perlu kartu kredit, dan prosesnya hanya memakan waktu 2-3 menit.
             </p>
 
-            <h4>🔑 Cara Menggunakan API Key di Aplikasi</h4>
+            <h4>🔑 Cara Menggunakan API Key di Aplikasi (WAJIB)</h4>
             <ol align="justify">
                 <li>Buka jendela <b>"🤖 Bantuan AI"</b> pada aplikasi ini.</li>
-                <li>Di bagian bawah, klik untuk membuka <b>"🔧 Jika proxy error 500, gunakan API Key sendiri (fallback)"</b>.</li>
-                <li><b>Tempelkan</b> API Key yang sudah Anda salin ke dalam kolom yang tersedia.</li>
+                <li>Pada bagian <b>"🔑 Masukkan API Key Gemini Anda (wajib)"</b>, <b>tempelkan</b> API Key yang sudah Anda salin.</li>
                 <li>Klik <b>"💾 Simpan API Key"</b>. Kunci akan tersimpan di browser Anda.</li>
-                <li>Sekarang fitur Bantuan AI akan langsung menggunakan API Key pribadi dan tidak terganggu oleh error proxy.</li>
+                <li>Sekarang fitur Bantuan AI akan langsung menggunakan API Key pribadi Anda.</li>
             </ol>
             <p align="justify">
               <strong>Peringatan Keamanan:</strong> API Key bersifat rahasia seperti kata sandi. Jangan membagikannya kepada orang lain. 
@@ -616,12 +614,12 @@
                     <button id="btn-clear-ai" class="danger">🧹 Bersihkan Konten</button>
                 </div>
                 
-                <!-- Opsi fallback API key langsung (opsional) -->
-                <details style="margin-bottom: 12px;">
-                    <summary style="cursor: pointer; color: var(--brand);">🔧 Jika proxy error 500, gunakan API Key sendiri (fallback)</summary>
+                <!-- Bagian API Key (WAJIB) -->
+                <details style="margin-bottom: 12px;" open>
+                    <summary style="cursor: pointer; color: var(--brand); font-weight: bold;">🔑 Masukkan API Key Gemini Anda (wajib)</summary>
                     <div style="margin-top: 8px;">
-                        <input type="text" id="manualApiKey" placeholder="Masukkan Google Gemini API Key" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--ink);">
-                        <div class="note" style="margin-top: 4px;">⚠️ API Key akan tersimpan di browser Anda (tidak aman untuk publik, gunakan hanya untuk pribadi). Dapatkan dari <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>.</div>
+                        <input type="text" id="manualApiKey" placeholder="Masukkan Google Gemini API Key (contoh: AIza...)" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--ink);">
+                        <div class="note" style="margin-top: 4px;">⚠️ API Key akan tersimpan di browser Anda. Dapatkan gratis dari <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>.</div>
                         <button id="saveApiKeyBtn" class="secondary" style="margin-top: 6px;">💾 Simpan API Key</button>
                         <button id="clearApiKeyBtn" class="ghost" style="margin-top: 6px;">🗑 Hapus API Key</button>
                     </div>
@@ -634,7 +632,7 @@
             
             <h3>Hasil Respons AI:</h3>
             <div id="ai-output" class="out html-output tex2jax_process" style="min-height: 120px; max-height: 350px; overflow-y: auto; border: 1px solid var(--border);">
-                Silakan ketik pertanyaan atau draf instruksi di atas, lalu klik tombol untuk mendapatkan bantuan jawaban cerdas.
+                Silakan masukkan API Key Anda di atas, lalu ketik pertanyaan dan klik tombol untuk mendapatkan bantuan.
             </div>
         </div>
     </div>
@@ -1011,8 +1009,7 @@
             likeCountSpan.textContent = "⚠️";
         }
 
-        // ===================== INTEGRASI GEMINI AI (dengan fallback API key + ROBUST FETCH) =====================
-        const PROXY_URL = "https://gemini-proxy.sub1104ono.workers.dev";
+        // ===================== INTEGRASI GEMINI AI (WAJIB API KEY SENDIRI) =====================
         const btnAskGemini = document.getElementById('btn-ask-gemini');
         const btnClearAI = document.getElementById('btn-clear-ai');
         const btnCopyAI = document.getElementById('btn-copy-ai');
@@ -1025,21 +1022,21 @@
 
         let rawAiMarkdown = "";
         let lastRequestTime = 0;
-        const COOLDOWN_MS = 15000;
+        const COOLDOWN_MS = 20000; // 20 detik cooldown
         let isRequesting = false;
         
-        // Simpan API key di localStorage jika pengguna memasukkannya
+        // Simpan API key di localStorage
         let userApiKey = localStorage.getItem('gemini_api_key') || '';
         if (userApiKey) manualApiKeyInput.value = userApiKey;
 
         saveApiKeyBtn.addEventListener('click', () => {
             const newKey = manualApiKeyInput.value.trim();
-            if (newKey) {
+            if (newKey && newKey.startsWith('AIza')) {
                 localStorage.setItem('gemini_api_key', newKey);
                 userApiKey = newKey;
-                alert("API Key disimpan secara lokal. Sekarang Anda dapat menggunakan fallback langsung ke Gemini API.");
+                alert("✅ API Key disimpan. Sekarang Anda dapat menggunakan Bantuan AI.");
             } else {
-                alert("Masukkan API Key yang valid.");
+                alert("❌ API Key tidak valid. Pastikan diawali dengan 'AIza' dan disalin dengan benar dari Google AI Studio.");
             }
         });
         
@@ -1047,80 +1044,69 @@
             localStorage.removeItem('gemini_api_key');
             userApiKey = '';
             manualApiKeyInput.value = '';
-            alert("API Key lokal telah dihapus.");
+            alert("API Key lokal telah dihapus. Anda harus memasukkannya lagi untuk menggunakan AI.");
         });
 
-        // ========== FUNGSI FETCH DENGAN TIMEOUT DAN RETRY (ROBUST) ==========
-        async function fetchWithTimeout(url, options, timeoutMs = 15000) {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeoutMs);
-            try {
-                const response = await fetch(url, {
-                    ...options,
-                    signal: controller.signal
-                });
-                clearTimeout(id);
-                return response;
-            } catch (err) {
-                clearTimeout(id);
-                if (err.name === 'AbortError') {
-                    throw new Error('TIMEOUT');
-                }
-                throw err;
-            }
-        }
-
-        async function fetchWithRetry(url, options, maxRetries = 2, delayMs = 1000) {
+        // Fungsi panggil Gemini langsung (tanpa proxy)
+        async function callGeminiDirectly(prompt, apiKey) {
+            // Model prioritas: gemini-1.5-pro, gemini-1.5-flash, gemini-pro
+            const models = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'];
             let lastError;
-            for (let i = 0; i <= maxRetries; i++) {
+            
+            for (const model of models) {
                 try {
-                    const response = await fetchWithTimeout(url, options, 15000);
-                    // Jika respons 5xx (termasuk 503), throw untuk memicu retry
-                    if (response.status >= 500 && response.status < 600) {
-                        throw new Error(`HTTP ${response.status} - Server error`);
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 20000);
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }]
+                        }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            return data.candidates[0].content.parts[0].text;
+                        } else {
+                            throw new Error("Respons tidak memiliki teks");
+                        }
+                    } else if (response.status === 404) {
+                        console.warn(`Model ${model} tidak ditemukan, coba model berikutnya...`);
+                        lastError = new Error(`Model ${model} tidak tersedia`);
+                        continue;
+                    } else if (response.status === 429) {
+                        throw new Error("429 - Terlalu banyak permintaan. Tunggu beberapa saat.");
+                    } else if (response.status === 403 || response.status === 401) {
+                        throw new Error("API Key tidak valid atau tidak memiliki akses. Periksa kembali.");
+                    } else {
+                        throw new Error(`HTTP ${response.status} - ${response.statusText}`);
                     }
-                    return response;
                 } catch (err) {
                     lastError = err;
-                    if (i < maxRetries && (err.message.includes('TIMEOUT') || err.message.includes('503') || err.message.includes('500') || err.message.includes('502') || err.message.includes('504'))) {
-                        console.warn(`Retry ${i+1}/${maxRetries} after ${delayMs}ms...`);
-                        await new Promise(resolve => setTimeout(resolve, delayMs));
-                        delayMs *= 2; // exponential backoff
-                        continue;
-                    }
+                    if (err.message.includes('404')) continue;
                     throw err;
                 }
             }
-            throw lastError;
-        }
-        // ========== AKHIR FUNGSI ROBUST ==========
-
-        // Fungsi untuk memanggil Gemini langsung (fallback)
-        async function callGeminiDirectly(prompt, apiKey) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
-            });
-            if (!response.ok) {
-                if (response.status === 429) throw new Error("429 - Rate limit API key sendiri");
-                if (response.status === 403 || response.status === 401) throw new Error("API Key tidak valid atau tidak memiliki akses");
-                throw new Error(`HTTP ${response.status}`);
-            }
-            const data = await response.json();
-            if (!data.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error("Respons tidak memiliki teks");
-            return data.candidates[0].content.parts[0].text;
+            throw lastError || new Error("Tidak ada model Gemini yang tersedia untuk API key ini.");
         }
 
         btnAskGemini.addEventListener('click', async () => {
+            // Validasi API Key
+            if (!userApiKey) {
+                aiOutput.innerHTML = `<span style="color:var(--danger)">❌ Anda belum memasukkan API Key Gemini. Silakan masukkan API Key di bagian "🔑 Masukkan API Key Gemini Anda (wajib)" dan klik "Simpan API Key".</span>`;
+                return;
+            }
+            
             const now = Date.now();
             const timeSinceLast = now - lastRequestTime;
             if (timeSinceLast < COOLDOWN_MS && lastRequestTime !== 0) {
                 const waitSeconds = Math.ceil((COOLDOWN_MS - timeSinceLast) / 1000);
-                aiOutput.innerHTML = `<span style="color:var(--danger)">⏳ Harap tunggu ${waitSeconds} detik sebelum mengirim permintaan baru.</span>`;
+                aiOutput.innerHTML = `<span style="color:var(--danger)">⏳ Harap tunggu ${waitSeconds} detik sebelum mengirim permintaan baru (cooldown).</span>`;
                 return;
             }
             
@@ -1138,7 +1124,7 @@
             isRequesting = true;
             btnAskGemini.disabled = true;
             aiLoading.style.display = 'block';
-            aiOutput.innerHTML = "🤔 Sedang memproses penalaran AI...";
+            aiOutput.innerHTML = "🤔 Sedang memproses penalaran AI menggunakan API Key Anda...";
             rawAiMarkdown = "";
 
             const sistemPrompt = `Anda adalah asisten laboratorium matematika profesional. 
@@ -1148,64 +1134,22 @@ Jawab pertanyaan berikut dengan penjelasan runut dan edukatif.
 Pertanyaan: ${promptText}`;
 
             try {
-                let responseText = "";
-                let usedProxy = true;
-                
-                // Coba pakai proxy dulu dengan mekanisme robust (timeout + retry)
-                try {
-                    const proxyResponse = await fetchWithRetry(PROXY_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: sistemPrompt }] }] })
-                    }, 2, 1000);
-                    
-                    if (proxyResponse.status === 200) {
-                        const data = await proxyResponse.json();
-                        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            responseText = data.candidates[0].content.parts[0].text;
-                            usedProxy = true;
-                        } else {
-                            throw new Error("Respons proxy tidak valid");
-                        }
-                    } else if (proxyResponse.status === 429) {
-                        throw new Error("429 - Rate limit dari proxy");
-                    } else {
-                        throw new Error(`HTTP ${proxyResponse.status} dari proxy`);
-                    }
-                } catch (proxyErr) {
-                    console.warn("Proxy gagal setelah retry:", proxyErr.message);
-                    // Fallback ke API key langsung jika tersedia
-                    if (userApiKey) {
-                        aiOutput.innerHTML = "⚠️ Proxy sedang bermasalah. Mencoba menggunakan API Key Anda...";
-                        try {
-                            responseText = await callGeminiDirectly(sistemPrompt, userApiKey);
-                            usedProxy = false;
-                            aiOutput.innerHTML = "✅ Berhasil menggunakan API Key pribadi.";
-                        } catch (directErr) {
-                            throw new Error(`Proxy error (${proxyErr.message}) dan API key gagal: ${directErr.message}`);
-                        }
-                    } else {
-                        throw new Error(`Proxy error: ${proxyErr.message}. Silakan masukkan API Key sendiri di opsi fallback.`);
-                    }
-                }
-                
+                const responseText = await callGeminiDirectly(sistemPrompt, userApiKey);
                 rawAiMarkdown = responseText;
                 aiOutput.innerHTML = renderMarkdownAndMath(responseText);
-                if (!usedProxy) {
-                    aiOutput.innerHTML += '<div class="note" style="margin-top: 8px;">✨ Dijawab menggunakan API Key pribadi Anda.</div>';
-                }
                 lastRequestTime = Date.now();
-                
             } catch (error) {
                 console.error("Kesalahan AI:", error);
                 let userMessage = error.message;
                 if (userMessage.includes('429')) {
                     userMessage = "Terlalu banyak permintaan. Tunggu 30 detik.";
                     lastRequestTime = Date.now() - COOLDOWN_MS + 30000;
-                } else if (userMessage.includes('TIMEOUT')) {
-                    userMessage = "Koneksi ke proxy timeout. Gunakan opsi 'API Key sendiri' atau coba lagi nanti.";
+                } else if (userMessage.includes('TIMEOUT') || userMessage.includes('AbortError')) {
+                    userMessage = "Koneksi timeout. Periksa koneksi internet atau coba lagi nanti.";
                 } else if (userMessage.includes('fetch')) {
-                    userMessage = "Gagal terhubung ke layanan AI. Periksa koneksi internet.";
+                    userMessage = "Gagal terhubung ke layanan Gemini. Periksa koneksi internet.";
+                } else if (userMessage.includes('API Key tidak valid')) {
+                    userMessage = "API Key tidak valid. Hapus dan masukkan API Key yang benar dari Google AI Studio.";
                 }
                 aiOutput.innerHTML = `<span style="color:var(--danger)">❌ Gagal: ${userMessage}</span>`;
             } finally {
@@ -1225,7 +1169,7 @@ Pertanyaan: ${promptText}`;
 
         btnClearAI.addEventListener('click', () => {
             aiPrompt.value = '';
-            aiOutput.innerHTML = 'Silakan ketik pertanyaan atau draf instruksi di atas, lalu klik tombol untuk mendapatkan bantuan jawaban cerdas.';
+            aiOutput.innerHTML = 'Silakan masukkan API Key, ketik pertanyaan, lalu klik tombol untuk mendapatkan bantuan jawaban cerdas.';
             rawAiMarkdown = '';
         });
 
