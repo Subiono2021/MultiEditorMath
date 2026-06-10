@@ -927,7 +927,7 @@
             if (likeButton) likeButton.title = "Konfigurasi Firebase tidak tersedia";
         }
 
-        // ===================== INTEGRASI AI MULTI-PROVIDER (DIPERBAIKI) =====================
+        // ===================== INTEGRASI AI MULTI-PROVIDER (DIPERBAIKI UNTUK KEY AQ.) =====================
         const PROXY_URL = "https://gemini-proxy.sub1104ono.workers.dev";
         const btnAskGemini = document.getElementById('btn-ask-gemini');
         const btnClearAI = document.getElementById('btn-clear-ai');
@@ -982,40 +982,67 @@
             alert("Konfigurasi custom API telah dihapus.");
         });
 
+        // ===================== PERBAIKAN UTAMA: callCustomAPI mendukung endpoint Gemini =====================
         async function callCustomAPI(prompt) {
             if (!customConfig.url || !customConfig.model || !customConfig.apiKey) {
                 throw new Error("Konfigurasi custom API belum lengkap.");
             }
-            const response = await fetch(customConfig.url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${customConfig.apiKey}`
-                },
-                body: JSON.stringify({
+            const isGeminiEndpoint = customConfig.url.includes('generativelanguage.googleapis.com');
+            
+            let headers = { 'Content-Type': 'application/json' };
+            let body;
+            
+            if (isGeminiEndpoint) {
+                // Format Google Gemini: pakai header X-goog-api-key, bukan Bearer
+                headers['X-goog-api-key'] = customConfig.apiKey;
+                body = JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                });
+            } else {
+                // Format OpenAI-like untuk endpoint lain
+                headers['Authorization'] = `Bearer ${customConfig.apiKey}`;
+                body = JSON.stringify({
                     model: customConfig.model,
                     messages: [{ role: "user", content: prompt }],
                     temperature: 0.7
-                })
+                });
+            }
+            
+            const response = await fetch(customConfig.url, {
+                method: 'POST',
+                headers: headers,
+                body: body
             });
+            
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`Custom API error ${response.status}: ${errorText.slice(0, 100)}`);
+                throw new Error(`Custom API error ${response.status}: ${errorText.slice(0, 150)}`);
             }
+            
             const data = await response.json();
-            if (data.choices && data.choices[0] && data.choices[0].message) {
-                return data.choices[0].message.content;
-            } else if (data.content) {
-                return data.content;
-            } else if (data.response) {
-                return data.response;
+            
+            if (isGeminiEndpoint) {
+                if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    return data.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("Respons Gemini tidak memiliki teks");
+                }
             } else {
-                throw new Error("Respons custom API tidak dikenali.");
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    return data.choices[0].message.content;
+                } else if (data.content) {
+                    return data.content;
+                } else if (data.response) {
+                    return data.response;
+                } else {
+                    throw new Error("Respons custom API tidak dikenali formatnya.");
+                }
             }
         }
 
-        // PERBAIKAN: Model yang benar adalah gemini-1.5-flash (bukan gemini-flash-latest)
+        // Fungsi memanggil Gemini langsung dengan API key resmi (AIza...)
         async function callGeminiDirectly(prompt, apiKey) {
+            // Gunakan model gemini-1.5-flash (stabil)
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             const response = await fetch(url, {
                 method: 'POST',
@@ -1026,7 +1053,7 @@
                 let errorMsg = `HTTP ${response.status}`;
                 if (response.status === 429) errorMsg = "429 - Rate limit (terlalu banyak permintaan)";
                 else if (response.status === 403 || response.status === 401) errorMsg = "API Key tidak valid atau tidak memiliki akses ke model gemini-1.5-flash";
-                else if (response.status === 503) errorMsg = "503 - Layanan Google sedang sibuk (high demand). Coba lagi nanti.";
+                else if (response.status === 503) errorMsg = "503 - Layanan Google sedang sibuk. Coba lagi nanti.";
                 else {
                     const errorText = await response.text();
                     errorMsg = `${response.status}: ${errorText.slice(0, 100)}`;
@@ -1040,22 +1067,7 @@
             return data.candidates[0].content.parts[0].text;
         }
 
-        async function callProxyGemini(prompt) {
-            const response = await fetch(PROXY_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            if (response.status === 200) {
-                const data = await response.json();
-                if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    return data.candidates[0].content.parts[0].text;
-                } else throw new Error("Respons proxy tidak valid");
-            } else if (response.status === 429) throw new Error("429 - Rate limit proxy");
-            else if (response.status === 500) throw new Error("500 - Proxy error");
-            else throw new Error(`HTTP ${response.status}`);
-        }
-
+        // ========== LOGIKA UTAMA: PRIORITAS CUSTOM API JIKA TERISI ==========
         btnAskGemini.addEventListener('click', async () => {
             const now = Date.now();
             if (now - lastRequestTime < COOLDOWN_MS && lastRequestTime !== 0) {
@@ -1088,38 +1100,52 @@ Pertanyaan: ${promptText}`;
                 let responseText = "";
                 let source = "";
 
-                // 1. Coba panggil Gemini langsung jika ada API key manual
-                const directKey = manualApiKeyInput.value.trim();
-                if (directKey) {
+                // PRIORITAS 1: Jika Custom API lengkap (URL, model, key) -> panggil custom
+                if (customConfig.url && customConfig.model && customConfig.apiKey) {
                     try {
-                        responseText = await callGeminiDirectly(sistemPrompt, directKey);
-                        source = "Gemini API (langsung)";
-                    } catch (directErr) {
-                        console.warn("Gemini langsung gagal:", directErr.message);
-                        // Jangan throw dulu, coba fallback ke proxy
-                        source = "";
+                        responseText = await callCustomAPI(sistemPrompt);
+                        source = "Custom API (priority)";
+                    } catch (customErr) {
+                        console.warn("Custom API gagal:", customErr.message);
+                        // Jangan langsung throw, coba fallback lain
                         responseText = "";
                     }
                 }
-
-                // 2. Jika belum berhasil, coba proxy
+                
+                // PRIORITAS 2: Jika belum berhasil, coba Gemini langsung dengan key manual (AIza...)
+                if (!responseText) {
+                    const directKey = manualApiKeyInput.value.trim();
+                    if (directKey) {
+                        try {
+                            responseText = await callGeminiDirectly(sistemPrompt, directKey);
+                            source = "Gemini API (langsung)";
+                        } catch (directErr) {
+                            console.warn("Gemini langsung gagal:", directErr.message);
+                            responseText = "";
+                        }
+                    }
+                }
+                
+                // PRIORITAS 3: Terakhir coba proxy publik
                 if (!responseText) {
                     try {
-                        responseText = await callProxyGemini(sistemPrompt);
-                        source = "Proxy Gemini (default)";
+                        const proxyResponse = await fetch(PROXY_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: sistemPrompt }] }] })
+                        });
+                        if (proxyResponse.status === 200) {
+                            const data = await proxyResponse.json();
+                            if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                                responseText = data.candidates[0].content.parts[0].text;
+                                source = "Proxy Gemini (default)";
+                            } else throw new Error("Respons proxy tidak valid");
+                        } else if (proxyResponse.status === 429) throw new Error("429 - Rate limit proxy");
+                        else if (proxyResponse.status === 500) throw new Error("500 - Proxy error");
+                        else throw new Error(`HTTP ${proxyResponse.status}`);
                     } catch (proxyErr) {
                         console.warn("Proxy error:", proxyErr.message);
-                        // 3. Terakhir coba custom API
-                        if (customConfig.url && customConfig.model && customConfig.apiKey) {
-                            try {
-                                responseText = await callCustomAPI(sistemPrompt);
-                                source = "Custom API";
-                            } catch (customErr) {
-                                throw new Error(`Semua metode gagal.\nProxy: ${proxyErr.message}\nCustom: ${customErr.message}`);
-                            }
-                        } else {
-                            throw new Error(`Proxy error: ${proxyErr.message}. Silakan isi API Key Gemini di kolom 'Masukkan API Key' atau konfigurasi Custom API.`);
-                        }
+                        throw new Error(`Semua metode gagal. Pastikan Custom API (URL+Model+Key) sudah benar atau API Key Gemini valid. Detail: ${proxyErr.message}`);
                     }
                 }
 
@@ -1135,7 +1161,7 @@ Pertanyaan: ${promptText}`;
                 console.error("Kesalahan AI:", error);
                 let userMessage = error.message;
                 if (userMessage.includes('429')) userMessage = "Terlalu banyak permintaan. Tunggu 30 detik.";
-                else if (userMessage.includes('503')) userMessage = "Layanan Google sedang sibuk. Silakan coba lagi nanti atau gunakan Custom API.";
+                else if (userMessage.includes('503')) userMessage = "Layanan Google sedang sibuk. Coba lagi nanti atau gunakan Custom API.";
                 aiOutput.innerHTML = `<span style="color:var(--danger)">❌ Gagal: ${userMessage}</span>`;
             } finally {
                 aiLoading.style.display = 'none';
