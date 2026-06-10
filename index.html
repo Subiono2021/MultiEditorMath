@@ -12,6 +12,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
+    <!-- Konfigurasi Firebase dari file eksternal (tidak di-commit ke GitHub) -->
+    <script src="firebase-config.js"></script>
+
     <script>
       window.MathJax = {
         tex: {
@@ -260,7 +263,7 @@
             padding: 24px;
             border-radius: 16px;
             width: 90%;
-            max-width: 700px;
+            max-width: 800px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             position: relative;
         }
@@ -326,7 +329,6 @@
             border-color: var(--border) !important;
         }
 
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -378,7 +380,6 @@
             color: #63b3ed !important;
         }
 
-        /* Like button style */
         #likeButton {
             font-size: 1.4rem;
             padding: 6px 14px;
@@ -403,43 +404,37 @@
             margin-bottom: 10px;
         }
 		
-		/* ===== PERBAIKAN SPASI PARAGRAF ===== */
-#ai-output p {
-    margin-top: 0.2rem;
-    margin-bottom: 0.4rem;
-    line-height: 1;
-}
-
-#guideModal .modal-content p {
-    margin-top: 0.2rem;
-    margin-bottom: 0.4rem;
-    line-height: 1;
-}
-
-.markdown-preview p {
-    margin-top: 0.2rem;
-    margin-bottom: 0.4rem;
-    line-height: 1.5;
-}
-
-#ai-output ul, #ai-output ol,
-.markdown-preview ul, .markdown-preview ol,
-#guideModal .modal-content ul, #guideModal .modal-content ol {
-    margin-top: 0.2rem;
-    margin-bottom: 0.3rem;
-}
-#ai-output li,
-.markdown-preview li,
-#guideModal .modal-content li {
-    margin-bottom: 0.2rem;
-}
-
-.markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
-    margin-top: 0.7rem;
-    margin-bottom: 0.4rem;
-}
-		
-		
+		/* Spasi paragraf */
+		#ai-output p {
+            margin-top: 0.2rem;
+            margin-bottom: 0.4rem;
+            line-height: 1;
+        }
+        #guideModal .modal-content p {
+            margin-top: 0.2rem;
+            margin-bottom: 0.4rem;
+            line-height: 1;
+        }
+        .markdown-preview p {
+            margin-top: 0.2rem;
+            margin-bottom: 0.4rem;
+            line-height: 1.5;
+        }
+        #ai-output ul, #ai-output ol,
+        .markdown-preview ul, .markdown-preview ol,
+        #guideModal .modal-content ul, #guideModal .modal-content ol {
+            margin-top: 0.2rem;
+            margin-bottom: 0.3rem;
+        }
+        #ai-output li,
+        .markdown-preview li,
+        #guideModal .modal-content li {
+            margin-bottom: 0.2rem;
+        }
+        .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+            margin-top: 0.7rem;
+            margin-bottom: 0.4rem;
+        }
     </style>
 </head>
 <body>
@@ -450,12 +445,12 @@
                 SageMath (SageCell)</span> • <span class="badge">Sebagai Laboratorium Matematika berbasis Web</span>
             </h1>
             <div class="note">
-			Markdown/NoteBook dieksekusi <b>lokal di browser</b> via marked.js. MathLive adalah editor 
+                Markdown/NoteBook dieksekusi <b>lokal di browser</b> via marked.js. MathLive adalah editor 
                 matematika interaktif. SageMath dieksekusi <b>di cloud</b> via SageCell.
-			</div>
-			<div class="note">
-		This interactive Mathematics Laboratory is the result of a collaboration between: BiMath, DeepSeek, and Gemini.
-		</div>
+            </div>
+            <div class="note">
+                This interactive Mathematics Laboratory is the result of a collaboration between: BiMath, DeepSeek, and Gemini.
+            </div>
         </div>
     </header>
 
@@ -479,11 +474,9 @@
     <div id="guideModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            <h2>📚 <b>Panduan Multi Editor Versi 02</b></h2>
+            <h2>📚 <b>Panduan Multi Editor Versi 02 (Custom AI Supported)</b></h2>
             <p style="text-align: right; font-size: 18px;">
-              <b>
-                  قَالُوا سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنتَ الْعَلِيمُ الْحَكِيمُ
-              </b>
+              <b>قَالُوا سُبْحَانَكَ لَا عِلْمَ لَنَا إِلَّا مَا عَلَّمْتَنَا ۖ إِنَّكَ أَنتَ الْعَلِيمُ الْحَكِيمُ</b>
             </p>
             <p align="justify">
               Selamat datang di <b>Multi Editor</b>! Alat ini dirancang sebagai ruang kerja yang fleksibel untuk 
@@ -493,33 +486,20 @@
 
             <h3>Komponen Editor</h3>
             <ul align="justify">
-                <li>
-                  <strong>Markdown/NoteBook</strong>: Gunakan untuk membuat catatan, dokumentasi, atau laporan. 
-                  Fitur ini bekerja sepenuhnya di browser Anda.
-                </li>
-                <li>
-                  <strong>MathLive</strong>: Editor interaktif untuk menulis persamaan matematika kompleks dalam format <b>$\LaTeX$</b>. 
-                  Hasilnya langsung terlihat saat Anda mengetik dan sangat berguna untuk menampilkan simbol-simbol matematika.</li>
-                <li><strong>SageMath (SageCell)</strong>: Lingkungan komputasi aljabar yang kuat. Kode Anda dikirim dan 
-                  dieksekusi di server cloud SageCell, sangat berguna untuk perhitungan yang berat.
-                </li>
-				<li><b>🤖 Bantuan AI:</b> Disini anda bisa beriteraksi dengan <b>Gemini-AI</b>. Silahkan anda bertanya apa saja tentang matematika atau yang lainnya. Tentunya anda harus jaga <a href="https://subiono2021.github.io/BiMath_AI/" target="_blank" style="color:#ffffff;"><b>ETIKA-AI</b></a> dalam bertanya! Bila anda suka, silahkan tekan ❤️.</li>
+                <li><strong>Markdown/NoteBook</strong>: Catatan dengan dukungan LaTeX.</li>
+                <li><strong>MathLive</strong>: Editor persamaan interaktif.</li>
+                <li><strong>SageMath (SageCell)</strong>: Komputasi aljabar cloud.</li>
+                <li><strong>🤖 Bantuan AI</strong>: Terintegrasi dengan <b>Gemini (default)</b> dan mendukung <b>Custom API</b> (misalnya API key berawalan "AQ."). Silahkan anda bertanya apa saja tentang matematika atau yang lainnya. Tentunya anda harus jaga <a href="https://subiono2021.github.io/BiMath_AI/" target="_blank" style="color:#ffffff;"><b>ETIKA-AI</b></a> dalam bertanya! Bila anda suka, silahkan tekan ❤️.</li>
             </ul>
             <hr>
-            <h3>🔑 Wajib: Masukkan API Key Gemini Sendiri</h3>
-            <p align="justify">
-              Untuk menggunakan fitur <b>🤖 Bantuan AI</b>, Anda <strong>harus memiliki dan memasukkan API Key pribadi</strong> dari Google Gemini. 
-              Fitur ini tidak lagi menggunakan proxy publik yang sering error timeout. Berikut cara mendapatkannya secara gratis:
-            </p>
-
-            <h4>📋 Langkah Mendapatkan API Key Gemini (Gratis)</h4>
+			<h4>📋 Langkah Mendapatkan API Key Gemini (Gratis)</h4>
             <ol align="justify">
                 <li>Buka situs <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a> (aistudio.google.com).</li>
                 <li>Klik <b>"Sign in"</b> dan masuk dengan akun Google Anda. Jika belum punya, buat akun gratis terlebih dahulu.</li>
                 <li>Setelah masuk, cari menu <b>"Get API key"</b> di sisi kiri layar.</li>
                 <li>Klik tombol <b>"Create API key"</b> (di pojok kanan atas).</li>
                 <li>Pilih <b>"Create a new project"</b> (beri nama bebas, misal "Proyek AI Saya") atau pilih proyek yang sudah ada.</li>
-                <li><b>Salin kode API Key</b> yang muncul (biasanya diawali dengan <code>AIza...</code>). <u>Simpan di tempat aman</u> karena tidak bisa dilihat lagi setelah halaman ditutup.</li>
+                <li><b>Salin kode API Key</b> yang muncul. <u>Simpan di tempat aman</u> karena tidak bisa dilihat lagi setelah halaman ditutup.</li>
             </ol>
             <p align="justify">
               <strong>Catatan:</strong> Paket gratis Google memberikan kuota yang cukup untuk penggunaan pribadi (50–500 permintaan per hari). 
@@ -537,66 +517,33 @@
               <strong>Peringatan Keamanan:</strong> API Key bersifat rahasia seperti kata sandi. Jangan membagikannya kepada orang lain. 
               Aplikasi ini menyimpannya secara lokal di browser Anda, tidak dikirim ke server manapun.
             </p>
-            <hr>
-            
+            <hr>	
             <h3>Fungsionalitas Tambahan</h3>
             <ul align="justify">
-              <li>
-                <strong>💾 Simpan Semua</strong>: Fungsi ini akan mengunduh semua konten dari setiap editor yang ada di halaman ke dalam satu file. File ini berformat JSON (`.json`) dan dapat digunakan untuk mengembalikan semua editor Anda di lain waktu.
-              </li>
-              <li>
-                <strong>📂 Import File</strong>: Tombol ini memungkinkan Anda mengunggah file `.json` yang sebelumnya Anda simpan. Setelah diimpor, semua editor yang ada dalam file tersebut akan dimuat kembali ke halaman.
-              </li>
-              <li>
-                <strong>🧹 Bersihkan Editor</strong>: Tombol ini akan menghapus semua editor yang saat ini ada di halaman. Gunakan tombol ini untuk memulai dari awal.
-              </li>
-              <li>
-                <strong>☀️/🌙 Mode Gelap</strong>: Tombol ini memungkinkan Anda beralih antara tema tampilan terang dan gelap. Pengaturan pilihan tema akan disimpan di browser Anda sehingga akan tetap sama saat Anda kembali mengunjungi halaman ini.
-              </li>
+              <li><strong>💾 Simpan Semua</strong>: Unduh semua editor ke file JSON.</li>
+              <li><strong>📂 Import File</strong>: Muat kembali file JSON.</li>
+              <li><strong>🧹 Bersihkan Editor</strong>: Hapus semua editor.</li>
+              <li><strong>☀️/🌙 Mode Gelap</strong>: Tema terang/gelap otomatis tersimpan.</li>
             </ul>
-
             <hr>
-
             <h3>Relevansi di Era AI dan Komputasi Awan</h3>  
             <p align="justify">
-              Alat Multi Editor ini dirancang untuk proses pembelajaran dan kerja di era modern yang sangat dipengaruhi oleh 
-              <b>Kecerdasan Buatan (AI)</b> dan <b>Komputasi Awan (<i>Cloud Computing</i>)</b>.</p>
-            <p><strong>Kenapa penting?</strong></p>
-            <p align="justify">
-              Di masa depan, pekerjaan akan semakin bergantung pada kemampuan untuk <b>berinteraksi dengan AI</b> dan 
-              <b>memanfaatkan sumber daya komputasi awan</b>. Multi Editor ini adalah simulasi sederhana dari ekosistem tersebut:
-            </p>
-            <ul align="justify">
-                <li>
-                  Anda bisa menggunakan editor Markdown untuk mencatat ide atau instruksi, seolah-olah Anda sedang berinteraksi 
-                  dengan model <b>AI generatif</b>.
-                </li>
-                <li>
-                  Anda dapat menggunakan SageMath untuk melakukan perhitungan yang kompleks. Ini mirip dengan cara para 
-                  ilmuwan dan insinyur menggunakan platform komputasi awan untuk menjalankan model AI yang membutuhkan 
-                  daya pemrosesan tinggi, tanpa harus memiliki superkomputer sendiri.
-                </li>
-            </ul>
-            <p align="justify">
-              Menguasai alat-alat seperti ini berarti Anda sedang melatih diri untuk berpikir secara 
-              <b>komputasional</b> dan memanfaatkan teknologi cloud, sebuah keahlian fundamental di dunia yang didorong oleh AI.
+              Multi Editor ini mendukung integrasi AI dengan berbagai provider. Anda dapat menggunakan 
+              <b>Gemini API (gratis)</b> via proxy atau memasukkan <b>API Key sendiri</b> dari layanan AI apapun 
+              (OpenAI, Anthropic, Mandari, dll) dengan menyesuaikan <b>Custom API URL</b> dan <b>Model</b>.
             </p>    
         </div>
     </div>
     
     <div id="aiModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content">
             <span class="close-btn-ai">&times;</span>
-            <h2>🤖 Asisten BiMath-AI Terintegrasi (Google Gemini)</h2>
+            <h2>🤖 Asisten BiMath-AI (Multi-Provider)</h2>
             <p style="text-align: right; font-size: 16px; margin-top: 0;">
                 <b>يَرْفَعِ ٱللَّهُ ٱلَّذِينَ ءَامَنُوا۟ مِنكُمْ وَٱلَّذِينَ أُوتُوا۟ ٱلْعِلْمَ دَرَجَٰتٍ</b>
             </p>
             <p style="text-align: right; font-size: 18px;">
-                  <b>
-                        قَالَ النَّبِيُّ ﷺ:
-مَنْ كَتَمَ عِلْمًا أُلْجِمَ يَوْمَ الْقِيَامَةِ بِلِجَامٍ مِنْ نَارٍ          
-                       — رواه ابن ماجه والترمذي             
-                  </b>
+                <b>قَالَ النَّبِيُّ ﷺ: مَنْ كَتَمَ عِلْمًا أُلْجِمَ يَوْمَ الْقِيَامَةِ بِلِجَامٍ مِنْ نَارٍ — رواه ابن ماجه والترمذي</b>
             </p>
 
             <!-- LIKE COUNTER SECTION (Firebase) -->
@@ -606,7 +553,7 @@
 
             <div style="margin: 15px 0;">
                 <label for="ai-prompt" style="font-weight: bold; display: block; margin-bottom: 8px;">Tanyakan sesuatu tentang Matematika, LaTeX, atau SageMath:</label>
-                <textarea id="ai-prompt" class="code" style="height: 100px; margin-bottom: 10px;" placeholder="Contoh: Buatkan kode SageMath untuk menghitung nilai eigen matriks 3x3 pembawa nilai..."></textarea>
+                <textarea id="ai-prompt" class="code" style="height: 100px; margin-bottom: 10px;" placeholder="Contoh: Buatkan kode SageMath untuk menghitung nilai eigen matriks 3x3..."></textarea>
                 
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
                     <button id="btn-ask-gemini">✨ Tanyakan BiMath-AI</button>
@@ -614,14 +561,18 @@
                     <button id="btn-clear-ai" class="danger">🧹 Bersihkan Konten</button>
                 </div>
                 
-                <!-- Bagian API Key (WAJIB) -->
-                <details style="margin-bottom: 12px;" open>
-                    <summary style="cursor: pointer; color: var(--brand); font-weight: bold;">🔑 Masukkan API Key Gemini Anda (wajib)</summary>
-                    <div style="margin-top: 8px;">
-                        <input type="text" id="manualApiKey" placeholder="Masukkan Google Gemini API Key (contoh: AIza...)" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--ink);">
-                        <div class="note" style="margin-top: 4px;">⚠️ API Key akan tersimpan di browser Anda. Dapatkan gratis dari <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>.</div>
-                        <button id="saveApiKeyBtn" class="secondary" style="margin-top: 6px;">💾 Simpan API Key</button>
-                        <button id="clearApiKeyBtn" class="ghost" style="margin-top: 6px;">🗑 Hapus API Key</button>
+                <!-- Opsi custom API untuk key berawalan "AQ." dll -->
+                <details style="margin-bottom: 12px;">
+                    <summary style="cursor: pointer; color: var(--brand);">🔧 Gunakan Custom API (untuk API key selain Gemini, misal awalan "AQ.")</summary>
+                    <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                        <input type="text" id="customApiUrl" placeholder="Custom API URL (contoh: https://api.mandari.ai/v1/chat/completions)" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--ink);">
+                        <input type="text" id="customModel" placeholder="Nama Model (contoh: mandari-v1)" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--ink);">
+                        <input type="text" id="manualApiKey" placeholder="Masukkan API Key (bisa berawalan AQ., sk-, dll)" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--ink);">
+                        <div class="note">⚠️ API Key akan disimpan di browser Anda. Pastikan URL dan model sesuai dengan dokumentasi provider AI Anda.</div>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="saveCustomApiBtn" class="secondary">💾 Simpan Konfigurasi Custom</button>
+                            <button id="clearCustomApiBtn" class="ghost">🗑 Hapus Custom</button>
+                        </div>
                     </div>
                 </details>
                 
@@ -632,7 +583,7 @@
             
             <h3>Hasil Respons AI:</h3>
             <div id="ai-output" class="out html-output tex2jax_process" style="min-height: 120px; max-height: 350px; overflow-y: auto; border: 1px solid var(--border);">
-                Silakan masukkan API Key Anda di atas, lalu ketik pertanyaan dan klik tombol untuk mendapatkan bantuan.
+                Silakan ketik pertanyaan atau draf instruksi di atas, lalu klik tombol untuk mendapatkan bantuan jawaban cerdas.
             </div>
         </div>
     </div>
@@ -689,17 +640,12 @@
             });
         }
 
-        // Konfigurasi Marked.js
         marked.use({
             tokenizer: {
                 inlineText(src) {
                     const match = src.match(/^(\$\$[\s\S]+?\$\$|\$[\s\S]+?\$)/);
                     if (match) {
-                        return {
-                            type: 'text',
-                            raw: match[0],
-                            text: match[0]
-                        };
+                        return { type: 'text', raw: match[0], text: match[0] };
                     }
                     return false;
                 }
@@ -780,12 +726,9 @@
             const outEl = card.querySelector('.out');
 
             if (action === 'delete') {
-                if (confirm('Apakah Anda yakin ingin menghapus editor ini?')) {
-                    card.remove();
-                }
+                if (confirm('Apakah Anda yakin ingin menghapus editor ini?')) card.remove();
                 return;
             }
-
             if (action === 'copy') {
                 let textToCopy = '';
                 if (type === 'Markdown' || type === 'SageMath') {
@@ -798,7 +741,6 @@
                 copyToClipboard(textToCopy);
                 return;
             }
-
             if (action === 'clear-out') {
                 if (outEl) {
                     outEl.innerHTML = '';
@@ -812,7 +754,6 @@
                 if (previewDiv) previewDiv.innerHTML = '';
                 return;
             }
-
             if (action === 'toggle-markdown' && type === 'Markdown') {
                 const textarea = card.querySelector('textarea.code');
                 const previewDiv = card.querySelector('.markdown-preview');
@@ -829,7 +770,6 @@
                 }
                 return;
             }
-
             if (action === 'run-sage' && type === 'SageMath') {
                 const code = card.querySelector('textarea.code').value;
                 const target = card.querySelector('#sage-target-' + id);
@@ -926,43 +866,29 @@
             darkModeToggle.textContent = '☀️ Mode Terang';
         }
 
-        // ===================== INTEGRASI FIREBASE (LIKE COUNTER) =====================
-        const firebaseConfig = {
-            apiKey: "AIzaSyB1SQF1GnLy45Eu7CIYmMJnnQsuHkia-ts",
-            authDomain: "multi-editor-labs.firebaseapp.com",
-            projectId: "multi-editor-labs",
-            storageBucket: "multi-editor-labs.firebasestorage.app",
-            messagingSenderId: "773652810417",
-            appId: "1:773652810417:web:ec88f1b0f9a7da5d58f090",
-            measurementId: "G-4K0RLZDJJH"
-        };
-
+        // ===================== FIREBASE LIKE COUNTER (menggunakan konfigurasi dari file eksternal) =====================
         let db;
         let likesDocRef;
         let likeButton = document.getElementById('likeButton');
         let likeCountSpan = document.getElementById('likeCount');
         let isUpdatingLike = false;
 
-        try {
-            if (firebase.apps.length === 0 && firebaseConfig.apiKey !== "YOUR_API_KEY") {
-                firebase.initializeApp(firebaseConfig);
+        // Cek apakah konfigurasi Firebase tersedia (dari firebase-config.js)
+        if (typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY") {
+            try {
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp(FIREBASE_CONFIG);
+                }
                 db = firebase.firestore();
                 likesDocRef = db.collection('likes').doc('aiAssistant');
                 likesDocRef.get().then(doc => {
-                    if (!doc.exists) {
-                        likesDocRef.set({ count: 0 });
-                    }
+                    if (!doc.exists) likesDocRef.set({ count: 0 });
                 }).catch(err => console.warn("Firestore init:", err));
 
                 async function fetchLikeCount() {
                     try {
                         const doc = await likesDocRef.get();
-                        if (doc.exists) {
-                            const count = doc.data().count || 0;
-                            likeCountSpan.textContent = count;
-                        } else {
-                            likeCountSpan.textContent = '0';
-                        }
+                        likeCountSpan.textContent = doc.exists ? (doc.data().count || 0) : '0';
                     } catch (err) {
                         console.error("Gagal mengambil like:", err);
                         likeCountSpan.textContent = '?';
@@ -974,9 +900,7 @@
                     isUpdatingLike = true;
                     likeButton.disabled = true;
                     try {
-                        await likesDocRef.update({
-                            count: firebase.firestore.FieldValue.increment(1)
-                        });
+                        await likesDocRef.update({ count: firebase.firestore.FieldValue.increment(1) });
                         await fetchLikeCount();
                     } catch (err) {
                         console.error("Gagal menambah like:", err);
@@ -989,142 +913,158 @@
 
                 likeButton.addEventListener('click', incrementLike);
                 fetchLikeCount();
-
                 likesDocRef.onSnapshot((doc) => {
-                    if (doc.exists) {
-                        likeCountSpan.textContent = doc.data().count || 0;
-                    }
+                    if (doc.exists) likeCountSpan.textContent = doc.data().count || 0;
                 }, (err) => console.warn("Snapshot error:", err));
-
-            } else if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-                console.warn("Firebase: Silakan ganti konfigurasi firebaseConfig dengan data project Anda.");
+            } catch (e) {
+                console.error("Firebase error:", e);
                 likeButton.disabled = true;
-                likeCountSpan.textContent = "🔧 setup";
-            } else {
-                console.log("Firebase sudah aktif.");
+                likeCountSpan.textContent = "⚠️";
             }
-        } catch (e) {
-            console.error("Firebase error:", e);
+        } else {
+            console.warn("Firebase config tidak ditemukan atau tidak valid. Like counter dinonaktifkan.");
             likeButton.disabled = true;
-            likeCountSpan.textContent = "⚠️";
+            likeCountSpan.textContent = "🔧";
+            if (likeButton) likeButton.title = "Konfigurasi Firebase tidak tersedia";
         }
 
-        // ===================== INTEGRASI GEMINI AI (WAJIB API KEY SENDIRI) =====================
+        // ===================== INTEGRASI AI MULTI-PROVIDER (Custom & Gemini) =====================
+        const PROXY_URL = "https://gemini-proxy.sub1104ono.workers.dev";
         const btnAskGemini = document.getElementById('btn-ask-gemini');
         const btnClearAI = document.getElementById('btn-clear-ai');
         const btnCopyAI = document.getElementById('btn-copy-ai');
         const aiPrompt = document.getElementById('ai-prompt');
         const aiOutput = document.getElementById('ai-output');
         const aiLoading = document.getElementById('ai-loading');
+        
+        // Elemen custom API
+        const customApiUrlInput = document.getElementById('customApiUrl');
+        const customModelInput = document.getElementById('customModel');
         const manualApiKeyInput = document.getElementById('manualApiKey');
-        const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
-        const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
+        const saveCustomApiBtn = document.getElementById('saveCustomApiBtn');
+        const clearCustomApiBtn = document.getElementById('clearCustomApiBtn');
 
         let rawAiMarkdown = "";
         let lastRequestTime = 0;
-        const COOLDOWN_MS = 20000; // 20 detik cooldown
+        const COOLDOWN_MS = 15000;
         let isRequesting = false;
-        
-        // Simpan API key di localStorage
-        let userApiKey = localStorage.getItem('gemini_api_key') || '';
-        if (userApiKey) manualApiKeyInput.value = userApiKey;
 
-        saveApiKeyBtn.addEventListener('click', () => {
-            const newKey = manualApiKeyInput.value.trim();
-            if (newKey && newKey.startsWith('AIza')) {
-                localStorage.setItem('gemini_api_key', newKey);
-                userApiKey = newKey;
-                alert("✅ API Key disimpan. Sekarang Anda dapat menggunakan Bantuan AI.");
+        // Load konfigurasi custom dari localStorage
+        let customConfig = {
+            url: localStorage.getItem('custom_api_url') || '',
+            model: localStorage.getItem('custom_model') || '',
+            apiKey: localStorage.getItem('custom_api_key') || ''
+        };
+        if (customConfig.url) customApiUrlInput.value = customConfig.url;
+        if (customConfig.model) customModelInput.value = customConfig.model;
+        if (customConfig.apiKey) manualApiKeyInput.value = customConfig.apiKey;
+
+        saveCustomApiBtn.addEventListener('click', () => {
+            const url = customApiUrlInput.value.trim();
+            const model = customModelInput.value.trim();
+            const apiKey = manualApiKeyInput.value.trim();
+            if (url && model && apiKey) {
+                localStorage.setItem('custom_api_url', url);
+                localStorage.setItem('custom_model', model);
+                localStorage.setItem('custom_api_key', apiKey);
+                customConfig = { url, model, apiKey };
+                alert("Konfigurasi custom API disimpan. Sekarang Bantuan AI akan mencoba menggunakan endpoint ini jika proxy gagal.");
             } else {
-                alert("❌ API Key tidak valid. Pastikan diawali dengan 'AIza' dan disalin dengan benar dari Google AI Studio.");
+                alert("Harap isi URL, Model, dan API Key secara lengkap.");
             }
-        });
-        
-        clearApiKeyBtn.addEventListener('click', () => {
-            localStorage.removeItem('gemini_api_key');
-            userApiKey = '';
-            manualApiKeyInput.value = '';
-            alert("API Key lokal telah dihapus. Anda harus memasukkannya lagi untuk menggunakan AI.");
         });
 
-        // Fungsi panggil Gemini langsung (tanpa proxy)
-        async function callGeminiDirectly(prompt, apiKey) {
-            // Model prioritas: gemini-1.5-pro, gemini-1.5-flash, gemini-pro
-            const models = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'];
-            let lastError;
-            
-            for (const model of models) {
-                try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 20000);
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }]
-                        }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            return data.candidates[0].content.parts[0].text;
-                        } else {
-                            throw new Error("Respons tidak memiliki teks");
-                        }
-                    } else if (response.status === 404) {
-                        console.warn(`Model ${model} tidak ditemukan, coba model berikutnya...`);
-                        lastError = new Error(`Model ${model} tidak tersedia`);
-                        continue;
-                    } else if (response.status === 429) {
-                        throw new Error("429 - Terlalu banyak permintaan. Tunggu beberapa saat.");
-                    } else if (response.status === 403 || response.status === 401) {
-                        throw new Error("API Key tidak valid atau tidak memiliki akses. Periksa kembali.");
-                    } else {
-                        throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-                    }
-                } catch (err) {
-                    lastError = err;
-                    if (err.message.includes('404')) continue;
-                    throw err;
-                }
+        clearCustomApiBtn.addEventListener('click', () => {
+            localStorage.removeItem('custom_api_url');
+            localStorage.removeItem('custom_model');
+            localStorage.removeItem('custom_api_key');
+            customConfig = { url: '', model: '', apiKey: '' };
+            customApiUrlInput.value = '';
+            customModelInput.value = '';
+            manualApiKeyInput.value = '';
+            alert("Konfigurasi custom API telah dihapus.");
+        });
+
+        // Fungsi memanggil custom API (format OpenAI-like)
+        async function callCustomAPI(prompt) {
+            if (!customConfig.url || !customConfig.model || !customConfig.apiKey) {
+                throw new Error("Konfigurasi custom API belum lengkap. Isi URL, Model, dan API Key.");
             }
-            throw lastError || new Error("Tidak ada model Gemini yang tersedia untuk API key ini.");
+            const response = await fetch(customConfig.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${customConfig.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: customConfig.model,
+                    messages: [{ role: "user", content: prompt }],
+                    temperature: 0.7
+                })
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Custom API error ${response.status}: ${errorText.slice(0, 100)}`);
+            }
+            const data = await response.json();
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+                return data.choices[0].message.content;
+            } else if (data.content) {
+                return data.content;
+            } else if (data.response) {
+                return data.response;
+            } else {
+                throw new Error("Respons custom API tidak dikenali formatnya.");
+            }
         }
 
-        btnAskGemini.addEventListener('click', async () => {
-            // Validasi API Key
-            if (!userApiKey) {
-                aiOutput.innerHTML = `<span style="color:var(--danger)">❌ Anda belum memasukkan API Key Gemini. Silakan masukkan API Key di bagian "🔑 Masukkan API Key Gemini Anda (wajib)" dan klik "Simpan API Key".</span>`;
-                return;
+        // Fungsi memanggil Gemini langsung dengan model terbaru
+        async function callGeminiDirectly(prompt, apiKey) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            if (!response.ok) {
+                let errorMsg = `HTTP ${response.status}`;
+                if (response.status === 429) errorMsg = "429 - Rate limit (terlalu banyak permintaan)";
+                else if (response.status === 403 || response.status === 401) errorMsg = "API Key tidak valid atau tidak memiliki akses ke model gemini-flash-latest";
+                else {
+                    const errorText = await response.text();
+                    errorMsg = `${response.status}: ${errorText.slice(0, 100)}`;
+                }
+                throw new Error(errorMsg);
             }
-            
+            const data = await response.json();
+            if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                throw new Error("Respons Gemini tidak memiliki teks");
+            }
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        // ========== PERBAIKAN UTAMA: Prioritaskan API Key langsung jika tersedia ==========
+        btnAskGemini.addEventListener('click', async () => {
             const now = Date.now();
             const timeSinceLast = now - lastRequestTime;
             if (timeSinceLast < COOLDOWN_MS && lastRequestTime !== 0) {
                 const waitSeconds = Math.ceil((COOLDOWN_MS - timeSinceLast) / 1000);
-                aiOutput.innerHTML = `<span style="color:var(--danger)">⏳ Harap tunggu ${waitSeconds} detik sebelum mengirim permintaan baru (cooldown).</span>`;
+                aiOutput.innerHTML = `<span style="color:var(--danger)">⏳ Harap tunggu ${waitSeconds} detik sebelum mengirim permintaan baru.</span>`;
                 return;
             }
-            
             const promptText = aiPrompt.value.trim();
             if (!promptText) {
-                alert("Mohon masukkan pertanyaan terlebih dahulu.");
+                alert("Masukkan pertanyaan terlebih dahulu.");
                 return;
             }
-            
             if (isRequesting) {
                 aiOutput.innerHTML = `<span style="color:var(--brand)">⏳ Masih memproses permintaan sebelumnya...</span>`;
                 return;
             }
-            
             isRequesting = true;
             btnAskGemini.disabled = true;
             aiLoading.style.display = 'block';
-            aiOutput.innerHTML = "🤔 Sedang memproses penalaran AI menggunakan API Key Anda...";
+            aiOutput.innerHTML = "🤔 Sedang memproses penalaran AI...";
             rawAiMarkdown = "";
 
             const sistemPrompt = `Anda adalah asisten laboratorium matematika profesional. 
@@ -1134,23 +1074,62 @@ Jawab pertanyaan berikut dengan penjelasan runut dan edukatif.
 Pertanyaan: ${promptText}`;
 
             try {
-                const responseText = await callGeminiDirectly(sistemPrompt, userApiKey);
+                let responseText = "";
+                let source = "";
+
+                // Cek apakah pengguna sudah memasukkan API key Gemini langsung di kolom manualApiKey
+                const directKey = manualApiKeyInput.value.trim();
+                if (directKey) {
+                    try {
+                        responseText = await callGeminiDirectly(sistemPrompt, directKey);
+                        source = "Gemini API (langsung)";
+                    } catch (directErr) {
+                        console.warn("Gemini langsung gagal:", directErr.message);
+                        throw new Error(`Gemini langsung gagal: ${directErr.message}`);
+                    }
+                } else {
+                    // Tidak ada API key manual, coba proxy dulu
+                    try {
+                        const proxyResponse = await fetch(PROXY_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: sistemPrompt }] }] })
+                        });
+                        if (proxyResponse.status === 200) {
+                            const data = await proxyResponse.json();
+                            if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                                responseText = data.candidates[0].content.parts[0].text;
+                                source = "proxy Gemini (default)";
+                            } else throw new Error("Respons proxy tidak valid");
+                        } else if (proxyResponse.status === 429) throw new Error("429 - Rate limit proxy");
+                        else if (proxyResponse.status === 500) throw new Error("500 - Proxy error");
+                        else throw new Error(`HTTP ${proxyResponse.status}`);
+                    } catch (proxyErr) {
+                        console.warn("Proxy error:", proxyErr.message);
+                        if (customConfig.url && customConfig.model && customConfig.apiKey) {
+                            try {
+                                responseText = await callCustomAPI(sistemPrompt);
+                                source = "Custom API";
+                            } catch (customErr) {
+                                throw new Error(`Proxy error (${proxyErr.message}) dan Custom API gagal: ${customErr.message}`);
+                            }
+                        } else {
+                            throw new Error(`Proxy error: ${proxyErr.message}. Silakan isi API Key Gemini di kolom 'Masukkan API Key' atau konfigurasi Custom API.`);
+                        }
+                    }
+                }
+
                 rawAiMarkdown = responseText;
                 aiOutput.innerHTML = renderMarkdownAndMath(responseText);
+                if (source) {
+                    aiOutput.innerHTML += `<div class="note" style="margin-top: 8px;">✨ Dijawab via ${source}.</div>`;
+                }
                 lastRequestTime = Date.now();
             } catch (error) {
                 console.error("Kesalahan AI:", error);
                 let userMessage = error.message;
-                if (userMessage.includes('429')) {
-                    userMessage = "Terlalu banyak permintaan. Tunggu 30 detik.";
-                    lastRequestTime = Date.now() - COOLDOWN_MS + 30000;
-                } else if (userMessage.includes('TIMEOUT') || userMessage.includes('AbortError')) {
-                    userMessage = "Koneksi timeout. Periksa koneksi internet atau coba lagi nanti.";
-                } else if (userMessage.includes('fetch')) {
-                    userMessage = "Gagal terhubung ke layanan Gemini. Periksa koneksi internet.";
-                } else if (userMessage.includes('API Key tidak valid')) {
-                    userMessage = "API Key tidak valid. Hapus dan masukkan API Key yang benar dari Google AI Studio.";
-                }
+                if (userMessage.includes('429')) userMessage = "Terlalu banyak permintaan. Tunggu 30 detik.";
+                else if (userMessage.includes('500')) userMessage = "Layanan AI sedang error. Coba lagi nanti atau gunakan API Key sendiri.";
                 aiOutput.innerHTML = `<span style="color:var(--danger)">❌ Gagal: ${userMessage}</span>`;
             } finally {
                 aiLoading.style.display = 'none';
@@ -1160,16 +1139,13 @@ Pertanyaan: ${promptText}`;
         });
 
         btnCopyAI.addEventListener('click', () => {
-            if (!rawAiMarkdown) {
-                alert("Belum ada jawaban yang bisa disalin.");
-                return;
-            }
+            if (!rawAiMarkdown) { alert("Belum ada jawaban."); return; }
             copyToClipboard(rawAiMarkdown);
         });
 
         btnClearAI.addEventListener('click', () => {
             aiPrompt.value = '';
-            aiOutput.innerHTML = 'Silakan masukkan API Key, ketik pertanyaan, lalu klik tombol untuk mendapatkan bantuan jawaban cerdas.';
+            aiOutput.innerHTML = 'Silakan ketik pertanyaan atau draf instruksi di atas, lalu klik tombol untuk mendapatkan bantuan jawaban cerdas.';
             rawAiMarkdown = '';
         });
 
